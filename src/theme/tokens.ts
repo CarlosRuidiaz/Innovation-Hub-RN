@@ -62,6 +62,22 @@ export const AppTokens = {
   pillRadius: 999,
   // Iconos de los estados vacios.
   emptyIconSize: 48,
+  // Iconos: el normal de Flutter, el compacto y el que va dentro de un boton.
+  iconSize: 24,
+  iconSizeSmall: 20,
+  buttonIconSize: 18,
+  // Relleno de los botones principal y secundario (`padding` de sus temas).
+  buttonPaddingH: 20,
+  buttonPaddingV: 14,
+  // Relleno a los lados de una pildora.
+  pillPaddingH: 10,
+  // El cuadro del tipo de innovacion: en la cartelera y en las tarjetas compactas.
+  typeTileSize: 44,
+  typeTileSizeSmall: 36,
+  // Los campos de texto (`inputDecorationTheme`): relleno de 14 y, con el foco,
+  // borde persimmon de 2.
+  fieldPadding: 14,
+  focusedBorderWidth: 2,
 } as const;
 
 // Las familias cargadas en `App.tsx`. En React Native cada peso es una fuente
@@ -100,6 +116,8 @@ export const AppTypography = {
   tab: { fontFamily: AppFonts.bodySemiBold, fontSize: 14, color: AppColors.ink },
   // Etiquetas de la barra inferior.
   navLabel: { fontFamily: AppFonts.body, fontSize: 10, color: AppColors.ink },
+  // Etiqueta, pista y contador de los campos de texto.
+  field: { fontFamily: AppFonts.body, fontSize: 14, color: AppColors.secondary },
   // Texto de una pildora.
   pill: { fontFamily: AppFonts.bodySemiBold, fontSize: 11.5, color: AppColors.ink, lineHeight: 14 },
 } as const satisfies Record<string, TextStyleToken>;

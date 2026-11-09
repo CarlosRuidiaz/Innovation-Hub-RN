@@ -26,7 +26,7 @@ export function Pill({ label, background = AppColors.card, foreground, outlined 
 const styles = StyleSheet.create({
   pill: {
     alignSelf: "flex-start",
-    paddingHorizontal: 10,
+    paddingHorizontal: AppTokens.pillPaddingH,
     paddingVertical: AppTokens.gapXs,
     borderRadius: AppTokens.pillRadius,
   },

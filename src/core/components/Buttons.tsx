@@ -49,7 +49,7 @@ function AppButton({ label, onPress, disabled, loading, icon, testID, style, var
     >
       <View style={styles.content}>
         {loading ? <ActivityIndicator size="small" color={color} /> : null}
-        {!loading && icon ? <MaterialIcons name={icon} size={18} color={color} /> : null}
+        {!loading && icon ? <MaterialIcons name={icon} size={AppTokens.buttonIconSize} color={color} /> : null}
         <Text style={[styles.label, { color }]}>{label}</Text>
       </View>
     </Pressable>
@@ -61,8 +61,8 @@ const styles = StyleSheet.create({
     borderWidth: AppTokens.borderWidth,
     borderColor: AppColors.ink,
     borderRadius: AppTokens.radius,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingHorizontal: AppTokens.buttonPaddingH,
+    paddingVertical: AppTokens.buttonPaddingV,
   },
   content: {
     flexDirection: "row",

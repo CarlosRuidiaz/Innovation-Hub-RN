@@ -19,7 +19,7 @@ export function BackButton({ onPress, testID = BackButton.key }: { onPress?: () 
       onPress={onPress ?? (() => navigation.goBack())}
       style={styles.button}
     >
-      <MaterialIcons name="arrow-back" size={24} color={AppColors.ink} />
+      <MaterialIcons name="arrow-back" size={AppTokens.iconSize} color={AppColors.ink} />
     </Pressable>
   );
 }

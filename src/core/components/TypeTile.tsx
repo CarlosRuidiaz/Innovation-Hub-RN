@@ -7,19 +7,20 @@ import { AppColors, AppTokens } from "@/src/theme/tokens";
 
 // El cuadro con el icono de un tipo de innovacion (segunda fase, tarjetas de
 // Kora): fondo papel, borde de tinta, esquinas de 4. Va en dos tamaños: 44 en
-// las tarjetas de la cartelera y 36 en las compactas.
+// las tarjetas de la cartelera y 36 (`compact`) en las compactas.
 //
 // Recibe la clave tal como esta en el proyecto: nula o desconocida se pinta como
 // "Otros", igual que `innovationTypeOf`.
-export function TypeTile({ type, size = 44, testID }: { type: string | null | undefined; size?: 44 | 36; testID?: string }) {
+export function TypeTile({ type, compact = false, testID }: { type: string | null | undefined; compact?: boolean; testID?: string }) {
   const kind = innovationTypeOf(type);
+  const size = compact ? AppTokens.typeTileSizeSmall : AppTokens.typeTileSize;
   return (
     <View
       testID={testID}
       accessibilityLabel={kind.label}
       style={[styles.tile, { width: size, height: size }]}
     >
-      <MaterialIcons name={kind.icon} size={size === 44 ? 24 : 20} color={AppColors.ink} />
+      <MaterialIcons name={kind.icon} size={compact ? AppTokens.iconSizeSmall : AppTokens.iconSize} color={AppColors.ink} />
     </View>
   );
 }
