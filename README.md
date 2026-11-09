@@ -1,134 +1,76 @@
-# rn-uninorte-expo-template
+# Innovation Hub
 
-Template base para el curso de React Native con Expo (Uninorte).
+La cartelera de proyectos del Grupo 4 de Programación Móvil (Universidad del Norte), en React Native. Los
+estudiantes publican ideas de proyecto, se postulan, forman equipos y documentan sus avances. El backend y la
+autenticación son de **Roble**.
 
-## Stack
+Es la migración de la app Flutter del grupo, hecha como `f_market` → `r_market`: sobre el template
+`rn-uninorte-expo-template` del curso y con el paquete `roble-client`.
 
-- [Expo SDK 57](https://docs.expo.dev/) · React Native 0.86 · React 19.2
-- Navegación con [React Navigation 7](https://reactnavigation.org/) (`NavigationContainer`, sin Expo Router)
-- UI con [React Native Paper](https://callstack.github.io/react-native-paper/) (Material 3, tema claro/oscuro)
-- Persistencia local con AsyncStorage
-- Pruebas con Jest (`jest-expo`) y React Native Testing Library
+## Correrla
 
-## Requisitos
-
-- **Node.js 24 LTS** (recomendado). Mínimo soportado: 22.13 o 24.3. Con nvm o fnm basta `nvm use` (lee `.nvmrc`).
-
-## Crear un proyecto desde el template
+Hace falta Node.js 24 (mínimo 22.13).
 
 ```bash
-npx create-expo-app@latest nombre-proyecto --template https://github.com/augustosalazar/rn-uninorte-expo-template
+npm install
+cp .env.example .env        # en Windows: copy .env.example .env
+npm start                   # luego "a" para Android o "w" para el navegador
 ```
 
-Esto descarga el template, renombra el proyecto (`name` y `slug`), instala las dependencias e inicializa un repositorio git.
+Sin `.env` la app no sabe a qué proyecto de Roble conectarse, y lo dice en pantalla.
 
-Después de crearlo, cambie en `app.json` estos valores por unos propios:
-
-- `scheme` (por defecto `myapp`): en minúsculas y sin espacios, por ejemplo `nombreproyecto`. Es el prefijo de los deep links (`nombreproyecto://...`); si dos apps instaladas comparten el mismo scheme, los enlaces pueden abrir la app equivocada.
-- `android.package` e `ios.bundleIdentifier` (por defecto `com.example.myapp`): el identificador único de la app, por ejemplo `com.sunombre.nombreproyecto`. Dos apps con el mismo identificador se reemplazan entre sí en el dispositivo, y las tiendas rechazan `com.example`.
-
-## Empezar
+Para trabajar en la interfaz sin servidor, con los datos en memoria:
 
 ```bash
-cd nombre-proyecto
-npm start
+npm run start:local
 ```
 
-Abre la app en [Expo Go](https://expo.dev/go) (escanee el QR o presione `a` / `i` para el emulador o simulador). `npx expo start` hace lo mismo.
+Ahí se entra con `carlos.ruidiaz@uninorte.edu.co` y la clave `Clave!2026`. Los datos se pierden al cerrar la
+app.
 
-## Scripts
+## Pruebas
 
-| Comando | Descripción |
-|---|---|
-| `npm start` | Inicia el servidor de desarrollo (Expo Go) |
-| `npm run android` / `ios` / `web` | Inicia y abre en la plataforma indicada |
-| `npm run lint` | ESLint con la configuración de Expo |
-| `npm test` | Jest en modo watch |
-| `npm run test:ci` | Jest una sola vez (CI) |
+```bash
+npm run typecheck
+npm run lint
+npm run test:ci             # o test:unit, test:component, test:integration
+```
+
+Las pruebas no usan Roble: corren con fuentes falsas o con los datos en memoria. GitHub Actions corre las tres
+en cada push.
 
 ## Estructura
 
-El proyecto sigue una arquitectura limpia por funcionalidad (feature), con inyección de dependencias.
-
 ```
-App.tsx                      # Providers (DI, features, Paper) + NavigationContainer
-index.tsx                    # Punto de entrada (registerRootComponent)
+App.tsx                     proveedores, sesión y navegación
 src/
+  theme/                    "Cartelera": colores, medidas y tipografía (tokens.ts) y el tema de Paper
   core/
-    di/
-      container.ts           # Contenedor de dependencias (singletons por token)
-      tokens.ts              # Un token por dependencia
-      appContainer.ts        # Raíz de composición: qué implementación usa cada interfaz
-      DIProvider.tsx         # Expone el contenedor con useDI()
-    iLocalPreferences.ts     # Almacenamiento local (interfaz + implementación AsyncStorage)
-  navigation/
-    RootNavigator.tsx        # Stack raíz + tabs
-    types.ts                 # Tipos de rutas y parámetros (navegación tipada)
-  features/
-    home/                    # Funcionalidad simple: solo una pantalla
-    notes/                   # Funcionalidad de ejemplo con todas las capas
-      domain/
-        entities/            # Modelos (Note)
-        repositories/        # Interfaces de repositorio (qué se puede hacer)
-      data/
-        datasources/         # Acceso a datos (interfaz + implementación local)
-        repositories/        # Implementación del repositorio
-      presentation/
-        context/             # Estado de la funcionalidad (NotesProvider, useNotes)
-        screens/             # Pantallas
-  theme/                     # Colores claro/oscuro y temas de Paper
-__tests__/                   # Pruebas (unitarias, de pantalla y de flujo)
+    components/             piezas que usan varias funcionalidades
+    catalogs.ts             habilidades, tags, programas y tipos de innovación
+    roble/                  cliente, configuración y formato de las filas de Roble
+    di/                     contenedor de dependencias (appContainer y localContainer)
+    data/dummyData.ts       las filas en memoria
+    feedback/               la barra de avisos
+  navigation/               rutas, barra inferior y puerta de sesión
+  features/<funcionalidad>/
+    domain/                 entidades, interfaz del repositorio y su Failure
+    data/                   convertidores de filas, datasources (Roble y memoria) y repositorio
+    presentation/           pantallas, componentes y contextos
+    di.ts                   registra el repositorio con Roble y en memoria
+__tests__/                  unit, component, integration y support
 ```
 
-### Reglas de dependencia
+Cada ruta importa su pantalla desde la carpeta de su funcionalidad, y cada funcionalidad registra lo suyo en
+su `di.ts`: migrar una pantalla no toca la navegación ni los contenedores.
 
-- `presentation` → `domain`: las pantallas usan el contexto, y el contexto usa la **interfaz** del repositorio, obtenida con `useDI()`.
-- `data` → `domain`: las implementaciones cumplen las interfaces del dominio.
-- `domain` no importa nada de `data`, `presentation`, React ni librerías externas.
-- Solo `core/di/appContainer.ts` conoce las clases concretas. Para cambiar el almacenamiento (por ejemplo a un backend remoto) se crea otro data source y se cambia ahí; las pantallas no cambian.
+## Roble se comparte con la app Flutter
 
-### Agregar una funcionalidad
+La app Flutter sigue en uso sobre el mismo proyecto de Roble. Por eso:
 
-1. Copie `src/features/notes/` con el nuevo nombre y defina la entidad y la interfaz del repositorio en `domain/`.
-2. Implemente el data source y el repositorio en `data/`.
-3. Agregue sus tokens en `tokens.ts` y regístrelos en `appContainer.ts`.
-4. Cree el provider y las pantallas en `presentation/`; agregue el provider en `App.tsx` y las rutas en `navigation/types.ts` y `RootNavigator.tsx`.
-5. Para probar pantallas sin almacenamiento real, pase un contenedor con dobles de prueba: `<DIProvider container={...}>` (ver `__tests__/features/notes/NoteListScreen.test.tsx`).
-
-La funcionalidad `notes` es solo un ejemplo: puede borrarla (carpeta, tokens, registro en `appContainer.ts`, provider, rutas y pruebas) cuando ya no la necesite.
-
-## Compilar la app nativa
-
-Expo Go basta para el día a día. Para ver el ícono y el splash propios, o para usar librerías nativas fuera del SDK de Expo, compile e instale la app en un emulador o dispositivo:
-
-```bash
-npx expo run:android   # o npx expo run:ios
-```
-
-Esto requiere Android Studio (o Xcode en macOS) y los identificadores `android.package` / `ios.bundleIdentifier` de `app.json`. Si más adelante necesita las herramientas de un development build (menú de desarrollo, cambiar de servidor), instale `expo-dev-client` con `npx expo install expo-dev-client`.
-
-## Ícono y splash screen
-
-Las imágenes en `assets/images/` son **placeholders** ("RN" sobre el color primario del tema). Reemplácelas conservando nombre y tamaño; no hace falta tocar `app.json`.
-
-| Archivo | Tamaño | Uso |
-|---|---|---|
-| `icon.png` | 1024×1024, opaco, sin esquinas redondeadas | Ícono iOS y por defecto |
-| `android-icon-foreground.png` | 512×512, fondo transparente, logo dentro del 66 % central | Ícono adaptativo Android (capa frontal) |
-| `android-icon-background.png` | 512×512 | Ícono adaptativo Android (fondo) |
-| `android-icon-monochrome.png` | 432×432, blanco sobre transparente | Ícono temático Android 13+ |
-| `splash-icon.png` | 1024×1024, fondo transparente | Logo del splash (se muestra a 200 px de ancho) |
-| `favicon.png` | 48×48 | Web |
-
-Los colores de fondo del splash (claro/oscuro) y del ícono adaptativo se definen en `app.json`. El splash permanece visible mientras `App.tsx` termina de cargar (función `prepare`); agregue ahí lo que la primera pantalla necesite.
-
-Los cambios de ícono y splash solo se ven en un build nativo nuevo (`npx expo run:android` / `run:ios`), no en Expo Go.
-
-## Actualizar Expo
-
-```bash
-npx expo install expo@^<versión> --fix
-npx expo-doctor
-```
-
-Después de actualizar, revise la versión de Node que exige React Native (`engines.node` en `node_modules/react-native/package.json`) y ajuste `engines` en `package.json`, `.nvmrc` y la sección de requisitos.
+- Nunca se cambia, renombra ni borra una tabla o una columna que ya existe.
+- Se escribe en cada tabla exactamente como lo hace Flutter: los convertidores de `data/mappers/` producen lo
+  mismo que su `toJsonNoId` (listas como texto JSON, fechas en hora local sin zona) y sus pruebas lo comparan.
+- El perfil del estudiante viaja en el `extra` de la cuenta con los nombres que lee Flutter
+  (`academicProgram`, `semester`, `skills`, `bio`).
+- Lo nuevo va en tablas nuevas: `project_types` y `application_messages`.
