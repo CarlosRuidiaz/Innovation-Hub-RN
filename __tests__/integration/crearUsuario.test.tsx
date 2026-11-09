@@ -3,12 +3,12 @@ import React from "react";
 
 import { AppRoot } from "@/App";
 import { AppCatalogs } from "@/src/core/catalogs";
-import { PendingScreen } from "@/src/core/components/PendingScreen";
 import { DummyData } from "@/src/core/data/dummyData";
 import { createLocalContainer } from "@/src/core/di/localContainer";
 import CompleteProfileScreen from "@/src/features/auth/presentation/screens/CompleteProfileScreen";
 import LoginScreen from "@/src/features/auth/presentation/screens/LoginScreen";
 import SignupScreen from "@/src/features/auth/presentation/screens/SignupScreen";
+import { HomeTabKeys } from "@/src/navigation/BottomBar";
 
 // `integration_test/crear_usuario_test.dart`, con la app entera sobre los
 // datos en memoria.
@@ -65,7 +65,7 @@ describe("flujo: crear una cuenta", () => {
     fireEvent.press(screen.getByTestId(CompleteProfileScreen.submitButtonKey));
 
     // 5. La cuenta queda creada, con la sesion abierta, y llega al inicio.
-    expect(await screen.findByTestId(PendingScreen.keyFor("CarteleraScreen"))).toBeTruthy();
+    expect(await screen.findByTestId(HomeTabKeys.page)).toBeTruthy();
     expect(screen.queryByTestId(CompleteProfileScreen.key)).toBeNull();
     expect(screen.queryByTestId(LoginScreen.key)).toBeNull();
 
@@ -99,7 +99,7 @@ describe("flujo: crear una cuenta", () => {
     // No entra a la app, avisa, y la cuenta de antes sigue siendo una sola.
     expect(await screen.findByText("Ese correo ya esta registrado. Entra con el o usa otro.")).toBeTruthy();
     expect(screen.getByTestId(CompleteProfileScreen.key)).toBeTruthy();
-    expect(screen.queryByTestId(PendingScreen.keyFor("CarteleraScreen"))).toBeNull();
+    expect(screen.queryByTestId(HomeTabKeys.page)).toBeNull();
     expect(data.users).toHaveLength(accounts);
     expect(data.session).toBeNull();
   });

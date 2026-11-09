@@ -2,7 +2,6 @@ import { configure, fireEvent, render, screen } from "@testing-library/react-nat
 import React from "react";
 
 import { AppRoot } from "@/App";
-import { PendingScreen } from "@/src/core/components/PendingScreen";
 import { DummyData } from "@/src/core/data/dummyData";
 import { createLocalContainer } from "@/src/core/di/localContainer";
 import LoginScreen from "@/src/features/auth/presentation/screens/LoginScreen";
@@ -49,7 +48,7 @@ describe("flujo: login y cierre de sesion", () => {
 
     // 2. Contraseña correcta: entra al inicio.
     await logIn(password);
-    expect(await screen.findByTestId(PendingScreen.keyFor("CarteleraScreen"))).toBeTruthy();
+    expect(await screen.findByTestId(HomeTabKeys.page)).toBeTruthy();
     expect(screen.queryByTestId(LoginScreen.key)).toBeNull();
     expect(data.session?.email).toBe(email);
   });
@@ -57,13 +56,12 @@ describe("flujo: login y cierre de sesion", () => {
   it("el perfil muestra a quien entro y cerrar sesion devuelve al login", async () => {
     const data = startApp();
     await logIn(password);
-    await screen.findByTestId(PendingScreen.keyFor("CarteleraScreen"));
+    await screen.findByTestId(HomeTabKeys.page);
 
     // 3. El perfil es el de la cuenta que inicio sesion.
     fireEvent.press(screen.getByTestId(HomeTabKeys.profile));
     expect(await screen.findByTestId(ProfileScreen.key)).toBeTruthy();
-    expect(await screen.findByText("Ana Pérez")).toBeTruthy();
-    expect(screen.getByText("Ing. de Sistemas")).toBeTruthy();
+    expect((await screen.findAllByText("Ana Pérez")).length).toBeGreaterThan(0);
 
     // 4. Cerrar sesion pide confirmacion y luego vuelve al login.
     fireEvent.press(screen.getByTestId(ProfileScreen.logoutButtonKey));

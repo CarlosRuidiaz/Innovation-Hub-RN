@@ -11,18 +11,23 @@ import { BackButton } from "./BackButton";
 // pantalla desde la carpeta de su funcionalidad, asi que reemplazarla no toca
 // la navegacion.
 //
+// `testID` es la clave de la pantalla: la misma `Key` de la pagina en Flutter,
+// declarada junto a la pantalla, para que las pruebas que ya la buscan sigan
+// valiendo cuando el carril la reemplace.
+//
 // `withBack` es para las rutas sin barra de arriba (en Flutter pintan su propia
 // cabecera): asi se puede volver.
 type Props = {
   name: string;
   replaces: string;
   withBack?: boolean;
+  testID?: string;
   children?: React.ReactNode;
 };
 
-export function PendingScreen({ name, replaces, withBack = false, children }: Props) {
+export function PendingScreen({ name, replaces, withBack = false, testID, children }: Props) {
   return (
-    <SafeAreaView edges={withBack ? ["top"] : []} style={styles.screen} testID={PendingScreen.keyFor(name)}>
+    <SafeAreaView edges={withBack ? ["top"] : []} style={styles.screen} testID={testID ?? PendingScreen.keyFor(name)}>
       {withBack ? (
         <View style={styles.back}>
           <BackButton />

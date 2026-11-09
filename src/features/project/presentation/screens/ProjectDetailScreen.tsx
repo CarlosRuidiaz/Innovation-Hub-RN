@@ -6,5 +6,9 @@ import { PendingScreen } from "@/src/core/components/PendingScreen";
 // Recibe el proyecto (`project`) por los parametros de la ruta `ProjectDetail`,
 // como el `Get.arguments` de Flutter.
 export default function ProjectDetailScreen() {
-  return <PendingScreen name="ProjectDetailScreen" replaces="project_detail_page.dart" />;
+  return <PendingScreen name="ProjectDetailScreen" testID={ProjectDetailScreen.key} replaces="project_detail_page.dart" />;
 }
+
+// La `Key` de la pagina en Flutter. Las pruebas de la base la buscan: al
+// reemplazar esta pantalla, se conserva con este mismo nombre.
+ProjectDetailScreen.key = "ProjectDetailPage";

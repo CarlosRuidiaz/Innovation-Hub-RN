@@ -1,6 +1,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator, NativeStackNavigationOptions } from "@react-navigation/native-stack";
 import React from "react";
+import { StyleSheet, View } from "react-native";
 
 import { BackButton } from "../core/components/BackButton";
 import ApplicationStatusScreen from "../features/application/presentation/screens/ApplicationStatusScreen";
@@ -25,7 +26,7 @@ import ShowcaseScreen from "../features/showcase/presentation/screens/ShowcaseSc
 import PublishUpdateScreen from "../features/workspace/presentation/screens/PublishUpdateScreen";
 import WorkspaceScreen from "../features/workspace/presentation/screens/WorkspaceScreen";
 import { AppColors, AppTypography } from "../theme/tokens";
-import { BottomBar } from "./BottomBar";
+import { BottomBar, HomeTabKeys } from "./BottomBar";
 import { RootStackParamList, TabParamList } from "./types";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -60,16 +61,18 @@ function NoScreen() {
 // los pone con `navigation.setOptions`, sin tocar este archivo.
 function Tabs() {
   return (
-    <Tab.Navigator
-      tabBar={(props) => <BottomBar {...props} />}
-      screenOptions={{ ...headerLook, sceneStyle: { backgroundColor: AppColors.paper } }}
-    >
-      <Tab.Screen name="Home" component={CarteleraScreen} options={{ title: "Innovation Hub" }} />
-      <Tab.Screen name="MyProjects" component={MyProjectsScreen} options={{ title: "Mis proyectos" }} />
-      <Tab.Screen name="Create" component={NoScreen} />
-      <Tab.Screen name="Notifications" component={NotificationsScreen} options={{ title: "Notificaciones" }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: "Perfil" }} />
-    </Tab.Navigator>
+    <View testID={HomeTabKeys.page} style={styles.flex}>
+      <Tab.Navigator
+        tabBar={(props) => <BottomBar {...props} />}
+        screenOptions={{ ...headerLook, sceneStyle: { backgroundColor: AppColors.paper } }}
+      >
+        <Tab.Screen name="Home" component={CarteleraScreen} options={{ title: "Innovation Hub" }} />
+        <Tab.Screen name="MyProjects" component={MyProjectsScreen} options={{ title: "Mis proyectos" }} />
+        <Tab.Screen name="Create" component={NoScreen} />
+        <Tab.Screen name="Notifications" component={NotificationsScreen} options={{ title: "Notificaciones" }} />
+        <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: "Perfil" }} />
+      </Tab.Navigator>
+    </View>
   );
 }
 
@@ -111,3 +114,7 @@ export default function RootNavigator() {
     </Stack.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+});

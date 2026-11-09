@@ -11,6 +11,8 @@ type IconName = React.ComponentProps<typeof MaterialIcons>["name"];
 
 // Las `Key` de las pestañas en Flutter, como `testID`.
 export const HomeTabKeys = {
+  // La pagina con la barra inferior: verla es estar dentro de la app.
+  page: "HomePage",
   home: "NavInicio",
   myProjects: "NavMisProyectos",
   create: "NavCrear",
