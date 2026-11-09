@@ -1,107 +1,134 @@
-# Innovation Hub
+# rn-uninorte-expo-template
 
-Aplicación móvil para conectar estudiantes con proyectos universitarios.
+Template base para el curso de React Native con Expo (Uninorte).
 
-Quien tiene una idea la publica en una cartelera y dice qué habilidades busca. Quien quiere participar explora las ideas publicadas, encuentra las que encajan con lo que sabe hacer y se postula. El líder del proyecto revisa las postulaciones y arma su equipo.
+## Stack
 
-Proyecto del curso **Programación Móvil**, Universidad del Norte. Grupo 4.
-Hecho en Flutter con GetX, siguiendo una arquitectura limpia pragmática.
+- [Expo SDK 57](https://docs.expo.dev/) · React Native 0.86 · React 19.2
+- Navegación con [React Navigation 7](https://reactnavigation.org/) (`NavigationContainer`, sin Expo Router)
+- UI con [React Native Paper](https://callstack.github.io/react-native-paper/) (Material 3, tema claro/oscuro)
+- Persistencia local con AsyncStorage
+- Pruebas con Jest (`jest-expo`) y React Native Testing Library
 
-**Prototipo en Figma:** https://www.figma.com/design/WffkIQ3gkDkkGvudgIFaSE/Semana-5-prototipo
+## Requisitos
 
----
+- **Node.js 24 LTS** (recomendado). Mínimo soportado: 22.13 o 24.3. Con nvm o fnm basta `nvm use` (lee `.nvmrc`).
 
-## Qué hace
-
-- **Cartelera de proyectos.** Lista de ideas publicadas, cada una con su etapa, el programa académico, cuántos miembros tiene de los que busca y qué habilidades necesita. Hay una pestaña que filtra por las habilidades del estudiante y otra que muestra todo.
-- **Detalle de un proyecto.** El problema que resuelve, la descripción, el equipo actual y las habilidades que faltan. Desde ahí se postula.
-- **Publicar una idea.** Un formulario en tres pasos: lo esencial, el equipo que se busca y contexto opcional.
-- **Seguimiento de la postulación.** Ver si sigue en revisión o si ya fue aceptada, y cancelarla mientras siga pendiente.
-- **Gestión de postulantes.** Quien lidera un proyecto ve quién se postuló, con su programa, semestre y habilidades, y acepta o rechaza. También puede cerrar el reclutamiento.
-- **Perfil del estudiante**, con su programa, semestre y habilidades.
-
----
-
-## Cómo ejecutarlo
-
-Necesitas el SDK de Flutter instalado. Luego, desde la raíz del proyecto:
+## Crear un proyecto desde el template
 
 ```bash
-flutter pub get
+npx create-expo-app@latest nombre-proyecto --template https://github.com/augustosalazar/rn-uninorte-expo-template
 ```
 
-La primera ejecución necesita conexión a internet: las tipografías se descargan una vez y quedan en caché.
+Esto descarga el template, renombra el proyecto (`name` y `slug`), instala las dependencias e inicializa un repositorio git.
 
-### En un emulador de Android
+Después de crearlo, cambie en `app.json` estos valores por unos propios:
 
-Abre el emulador desde Android Studio, en **Device Manager**, y espera a que arranque del todo. Después:
+- `scheme` (por defecto `myapp`): en minúsculas y sin espacios, por ejemplo `nombreproyecto`. Es el prefijo de los deep links (`nombreproyecto://...`); si dos apps instaladas comparten el mismo scheme, los enlaces pueden abrir la app equivocada.
+- `android.package` e `ios.bundleIdentifier` (por defecto `com.example.myapp`): el identificador único de la app, por ejemplo `com.sunombre.nombreproyecto`. Dos apps con el mismo identificador se reemplazan entre sí en el dispositivo, y las tiendas rechazan `com.example`.
+
+## Empezar
 
 ```bash
-flutter devices     # para confirmar que aparece
-flutter run
+cd nombre-proyecto
+npm start
 ```
 
-Si hay un solo dispositivo conectado, `flutter run` lo toma directamente. Si hay varios, `flutter run -d <id>` con el identificador que muestre `flutter devices`.
+Abre la app en [Expo Go](https://expo.dev/go) (escanee el QR o presione `a` / `i` para el emulador o simulador). `npx expo start` hace lo mismo.
 
-### En el navegador
+## Scripts
+
+| Comando | Descripción |
+|---|---|
+| `npm start` | Inicia el servidor de desarrollo (Expo Go) |
+| `npm run android` / `ios` / `web` | Inicia y abre en la plataforma indicada |
+| `npm run lint` | ESLint con la configuración de Expo |
+| `npm test` | Jest en modo watch |
+| `npm run test:ci` | Jest una sola vez (CI) |
+
+## Estructura
+
+El proyecto sigue una arquitectura limpia por funcionalidad (feature), con inyección de dependencias.
+
+```
+App.tsx                      # Providers (DI, features, Paper) + NavigationContainer
+index.tsx                    # Punto de entrada (registerRootComponent)
+src/
+  core/
+    di/
+      container.ts           # Contenedor de dependencias (singletons por token)
+      tokens.ts              # Un token por dependencia
+      appContainer.ts        # Raíz de composición: qué implementación usa cada interfaz
+      DIProvider.tsx         # Expone el contenedor con useDI()
+    iLocalPreferences.ts     # Almacenamiento local (interfaz + implementación AsyncStorage)
+  navigation/
+    RootNavigator.tsx        # Stack raíz + tabs
+    types.ts                 # Tipos de rutas y parámetros (navegación tipada)
+  features/
+    home/                    # Funcionalidad simple: solo una pantalla
+    notes/                   # Funcionalidad de ejemplo con todas las capas
+      domain/
+        entities/            # Modelos (Note)
+        repositories/        # Interfaces de repositorio (qué se puede hacer)
+      data/
+        datasources/         # Acceso a datos (interfaz + implementación local)
+        repositories/        # Implementación del repositorio
+      presentation/
+        context/             # Estado de la funcionalidad (NotesProvider, useNotes)
+        screens/             # Pantallas
+  theme/                     # Colores claro/oscuro y temas de Paper
+__tests__/                   # Pruebas (unitarias, de pantalla y de flujo)
+```
+
+### Reglas de dependencia
+
+- `presentation` → `domain`: las pantallas usan el contexto, y el contexto usa la **interfaz** del repositorio, obtenida con `useDI()`.
+- `data` → `domain`: las implementaciones cumplen las interfaces del dominio.
+- `domain` no importa nada de `data`, `presentation`, React ni librerías externas.
+- Solo `core/di/appContainer.ts` conoce las clases concretas. Para cambiar el almacenamiento (por ejemplo a un backend remoto) se crea otro data source y se cambia ahí; las pantallas no cambian.
+
+### Agregar una funcionalidad
+
+1. Copie `src/features/notes/` con el nuevo nombre y defina la entidad y la interfaz del repositorio en `domain/`.
+2. Implemente el data source y el repositorio en `data/`.
+3. Agregue sus tokens en `tokens.ts` y regístrelos en `appContainer.ts`.
+4. Cree el provider y las pantallas en `presentation/`; agregue el provider en `App.tsx` y las rutas en `navigation/types.ts` y `RootNavigator.tsx`.
+5. Para probar pantallas sin almacenamiento real, pase un contenedor con dobles de prueba: `<DIProvider container={...}>` (ver `__tests__/features/notes/NoteListScreen.test.tsx`).
+
+La funcionalidad `notes` es solo un ejemplo: puede borrarla (carpeta, tokens, registro en `appContainer.ts`, provider, rutas y pruebas) cuando ya no la necesite.
+
+## Compilar la app nativa
+
+Expo Go basta para el día a día. Para ver el ícono y el splash propios, o para usar librerías nativas fuera del SDK de Expo, compile e instale la app en un emulador o dispositivo:
 
 ```bash
-flutter run -d chrome
+npx expo run:android   # o npx expo run:ios
 ```
 
-Útil para iterar rápido sobre la interfaz, porque recompila en segundos.
+Esto requiere Android Studio (o Xcode en macOS) y los identificadores `android.package` / `ios.bundleIdentifier` de `app.json`. Si más adelante necesita las herramientas de un development build (menú de desarrollo, cambiar de servidor), instale `expo-dev-client` con `npx expo install expo-dev-client`.
 
-### Notas
+## Ícono y splash screen
 
-No hay inicio de sesión todavía: la aplicación entra directo a la cartelera con un perfil de estudiante de ejemplo.
+Las imágenes en `assets/images/` son **placeholders** ("RN" sobre el color primario del tema). Reemplácelas conservando nombre y tamaño; no hace falta tocar `app.json`.
 
-Los datos son locales y de prueba. Lo que publiques o postules se mantiene mientras la aplicación siga abierta y se pierde al cerrarla, porque todavía no hay servidor ni almacenamiento permanente.
+| Archivo | Tamaño | Uso |
+|---|---|---|
+| `icon.png` | 1024×1024, opaco, sin esquinas redondeadas | Ícono iOS y por defecto |
+| `android-icon-foreground.png` | 512×512, fondo transparente, logo dentro del 66 % central | Ícono adaptativo Android (capa frontal) |
+| `android-icon-background.png` | 512×512 | Ícono adaptativo Android (fondo) |
+| `android-icon-monochrome.png` | 432×432, blanco sobre transparente | Ícono temático Android 13+ |
+| `splash-icon.png` | 1024×1024, fondo transparente | Logo del splash (se muestra a 200 px de ancho) |
+| `favicon.png` | 48×48 | Web |
 
----
+Los colores de fondo del splash (claro/oscuro) y del ícono adaptativo se definen en `app.json`. El splash permanece visible mientras `App.tsx` termina de cargar (función `prepare`); agregue ahí lo que la primera pantalla necesite.
 
-## Arquitectura
+Los cambios de ícono y splash solo se ven en un build nativo nuevo (`npx expo run:android` / `run:ios`), no en Expo Go.
 
-La aplicación está organizada por funcionalidad, y cada una se parte en tres capas donde **cada capa solo conoce a la de adentro**:
+## Actualizar Expo
 
-```
-Vista  →  Controlador  →  Repositorio  →  Fuente de datos
-       └─── ui/ ───┘   └─ domain/ ─┘   └──── data/ ────┘
-```
-
-Entre cada paso hay una interfaz, no una clase concreta. Eso tiene tres consecuencias prácticas:
-
-- Las reglas del negocio no dependen de Flutter ni de dónde vengan los datos.
-- Se puede probar un controlador sin base de datos, sin red y sin pantalla.
-- Cambiar los datos de prueba locales por un servidor real es escribir una clase nueva y cambiar una línea, sin tocar ninguna pantalla.
-
-```
-lib/
-├── main.dart          arranque y registro de las dependencias
-├── core/              tema visual, rutas y widgets compartidos
-└── features/
-    └── <nombre>/
-        ├── domain/    entidades y contratos
-        ├── data/      fuentes de datos y repositorios
-        └── ui/        controladores y pantallas
+```bash
+npx expo install expo@^<versión> --fix
+npx expo-doctor
 ```
 
-Es una versión pragmática de la arquitectura limpia: en lugar de un caso de uso por cada acción, esa lógica vive en el controlador. Reduce la cantidad de archivos sin perder la separación entre capas.
-
-### Identidad visual
-
-El diseño sigue el prototipo de Figma: fondo de papel crema, tarjetas con borde fino y sombra dura sin difuminado, chips en píldora y un color por cada etapa de un proyecto. Los valores están centralizados en un solo archivo, así que el aspecto de toda la aplicación se ajusta desde ahí.
-
----
-
-## Estado actual
-
-Todo el flujo descrito arriba está implementado y funcionando con datos locales de prueba: explorar la cartelera, ver el detalle de un proyecto, publicar una idea, postularse, seguir el estado de la postulación y gestionar los postulantes de un proyecto propio.
-
-El inicio de sesión está construido pero desconectado, a la espera del servidor.
-
-## Qué falta
-
-- Conectar un servidor. Hoy todos los datos son locales y de prueba.
-- Guardar los datos para que sobrevivan al cerrar la aplicación, y que funcione sin conexión.
-- Activar el inicio de sesión.
-- Notificaciones, espacio de trabajo del proyecto y el resto de pantallas del prototipo.
+Después de actualizar, revise la versión de Node que exige React Native (`engines.node` en `node_modules/react-native/package.json`) y ajuste `engines` en `package.json`, `.nvmrc` y la sección de requisitos.
