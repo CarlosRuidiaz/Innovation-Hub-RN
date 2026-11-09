@@ -1,4 +1,7 @@
+import { Archivo_400Regular, Archivo_600SemiBold, Archivo_700Bold } from "@expo-google-fonts/archivo";
+import { Fraunces_600SemiBold, Fraunces_700Bold } from "@expo-google-fonts/fraunces";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import Constants, { ExecutionEnvironment } from "expo-constants";
 import * as Font from "expo-font";
@@ -31,8 +34,18 @@ export default function App() {
     async function prepare() {
       try {
         // Load anything the first screen needs here (fonts, saved preferences, session...).
-        // Paper draws its icons with MaterialCommunityIcons, so preload that font.
-        await Font.loadAsync(MaterialCommunityIcons.font);
+        // Paper dibuja sus iconos con MaterialCommunityIcons; la app, con
+        // MaterialIcons (los mismos nombres de Flutter). Y las dos familias de
+        // Cartelera: Fraunces para titulares y Archivo para el resto.
+        await Font.loadAsync({
+          ...MaterialCommunityIcons.font,
+          ...MaterialIcons.font,
+          Fraunces_600SemiBold,
+          Fraunces_700Bold,
+          Archivo_400Regular,
+          Archivo_600SemiBold,
+          Archivo_700Bold,
+        });
       } catch (e) {
         console.warn(e);
       } finally {
