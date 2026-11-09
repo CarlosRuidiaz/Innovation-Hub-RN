@@ -18,6 +18,7 @@ import { MissingConfigScreen } from "./src/core/roble/MissingConfigScreen";
 import { missingRobleConfig, useLocalData } from "./src/core/roble/robleConfig";
 import { SessionProvider, useSession } from "./src/features/auth/presentation/context/SessionContext";
 import { FollowsProvider } from "./src/features/follow/presentation/context/FollowsContext";
+import { ProfileProvider } from "./src/features/profile/presentation/context/ProfileContext";
 import { ProjectsProvider } from "./src/features/project/presentation/context/ProjectsContext";
 import RootNavigator from "./src/navigation/RootNavigator";
 import { darkTheme, lightTheme } from "./src/theme/theme";
@@ -108,13 +109,15 @@ export function AppRoot({ container }: { container?: Container }) {
       <PaperProvider theme={theme}>
         <SnackbarProvider>
           <SessionProvider>
-            <ProjectsProvider>
-              <FollowsProvider>
-                <NavigationContainer theme={navigationTheme}>
-                  <Shell />
-                </NavigationContainer>
-              </FollowsProvider>
-            </ProjectsProvider>
+            <ProfileProvider>
+              <ProjectsProvider>
+                <FollowsProvider>
+                  <NavigationContainer theme={navigationTheme}>
+                    <Shell />
+                  </NavigationContainer>
+                </FollowsProvider>
+              </ProjectsProvider>
+            </ProfileProvider>
           </SessionProvider>
         </SnackbarProvider>
       </PaperProvider>
