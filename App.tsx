@@ -7,7 +7,7 @@ import Constants, { ExecutionEnvironment } from "expo-constants";
 import * as Font from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, useState } from "react";
-import { useColorScheme } from "react-native";
+import { LogBox, useColorScheme } from "react-native";
 import { PaperProvider } from "react-native-paper";
 
 import { Container } from "./src/core/di/container";
@@ -20,8 +20,15 @@ import { SessionProvider, useSession } from "./src/features/auth/presentation/co
 import { FollowsProvider } from "./src/features/follow/presentation/context/FollowsContext";
 import { ProfileProvider } from "./src/features/profile/presentation/context/ProfileContext";
 import { ProjectsProvider } from "./src/features/project/presentation/context/ProjectsContext";
+import { navigationRef } from "./src/navigation/navigationRef";
 import RootNavigator from "./src/navigation/RootNavigator";
 import { darkTheme, lightTheme } from "./src/theme/theme";
+
+// Las rutas reciben las entidades, como los `Get.arguments` de Flutter, y una
+// encuesta trae su fecha de cierre como `Date`: React Navigation avisa que no
+// se puede guardar el estado. Aqui no se guarda ni se abre por enlace, que es
+// cuando importa, asi que el aviso no aplica (lo dice su documentacion).
+LogBox.ignoreLogs(["Non-serializable values were found in the navigation state"]);
 
 // Expo Go doesn't support customizing the splash screen; only apply options in development/production builds.
 const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
@@ -112,7 +119,7 @@ export function AppRoot({ container }: { container?: Container }) {
             <ProfileProvider>
               <ProjectsProvider>
                 <FollowsProvider>
-                  <NavigationContainer theme={navigationTheme}>
+                  <NavigationContainer ref={navigationRef} theme={navigationTheme}>
                     <Shell />
                   </NavigationContainer>
                 </FollowsProvider>

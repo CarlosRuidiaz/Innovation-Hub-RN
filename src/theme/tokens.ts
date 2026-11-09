@@ -74,6 +74,16 @@ export const AppTokens = {
   // El cuadro del tipo de innovacion: en la cartelera y en las tarjetas compactas.
   typeTileSize: 44,
   typeTileSizeSmall: 36,
+  // La barra inferior de `home_page.dart`: relleno arriba y abajo, la raya
+  // persimmon bajo la pestaña activa y el boton negro de "Crear".
+  navBarPaddingTop: 8,
+  navBarPaddingBottom: 16,
+  navIndicatorWidth: 16,
+  navIndicatorHeight: 3,
+  navIndicatorRadius: 2,
+  navCreateWidth: 42,
+  navCreateHeight: 28,
+  navCreateBottomSpace: 7,
   // Los campos de texto (`inputDecorationTheme`): relleno de 14 y, con el foco,
   // borde persimmon de 2.
   fieldPadding: 14,
@@ -116,6 +126,8 @@ export const AppTypography = {
   tab: { fontFamily: AppFonts.bodySemiBold, fontSize: 14, color: AppColors.ink },
   // Etiquetas de la barra inferior.
   navLabel: { fontFamily: AppFonts.body, fontSize: 10, color: AppColors.ink },
+  // La de la pestaña activa, en negrita.
+  navLabelActive: { fontFamily: AppFonts.bodyBold, fontSize: 10, color: AppColors.ink },
   // Etiqueta, pista y contador de los campos de texto.
   field: { fontFamily: AppFonts.body, fontSize: 14, color: AppColors.secondary },
   // Texto de una pildora.
