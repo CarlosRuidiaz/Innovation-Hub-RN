@@ -1,16 +1,24 @@
 import { NavigatorScreenParams } from "@react-navigation/native";
 
-// Screens inside the bottom tabs.
+// Las pantallas de la barra inferior.
 export type TabParamList = {
   Home: undefined;
 };
 
-// Screens in the root stack.
+// Las pantallas de la pila.
 export type RootStackParamList = {
+  // Sin sesion.
+  Login: undefined;
+  Signup: undefined;
+  // Las credenciales del paso 1 viajan al paso 2, como el constructor de
+  // `CompleteProfilePage` en Flutter: la cuenta se crea alli, con todo junto.
+  CompleteProfile: { email: string; password: string };
+
+  // Con sesion.
   Tabs: NavigatorScreenParams<TabParamList>;
 };
 
-// Makes useNavigation() / navigation.navigate() type-checked across the app.
+// Hace que useNavigation() y navigation.navigate() se revisen en toda la app.
 declare global {
   namespace ReactNavigation {
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type

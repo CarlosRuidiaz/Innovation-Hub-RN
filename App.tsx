@@ -16,6 +16,7 @@ import { createLocalContainer } from "./src/core/di/localContainer";
 import { SnackbarProvider } from "./src/core/feedback/SnackbarProvider";
 import { MissingConfigScreen } from "./src/core/roble/MissingConfigScreen";
 import { missingRobleConfig, useLocalData } from "./src/core/roble/robleConfig";
+import { SessionProvider, useSession } from "./src/features/auth/presentation/context/SessionContext";
 import { FollowsProvider } from "./src/features/follow/presentation/context/FollowsContext";
 import { ProjectsProvider } from "./src/features/project/presentation/context/ProjectsContext";
 import RootNavigator from "./src/navigation/RootNavigator";
@@ -72,11 +73,10 @@ export function AppRoot({ container }: { container?: Container }) {
     prepare();
   }, []);
 
+  // Sin configuracion no hay sesion que esperar: el splash se va ya.
   useEffect(() => {
-    if (appIsReady) {
-      SplashScreen.hide();
-    }
-  }, [appIsReady]);
+    if (appIsReady && missing.length > 0) SplashScreen.hide();
+  }, [appIsReady, missing.length]);
 
   if (!appIsReady) {
     return null;
@@ -107,15 +107,27 @@ export function AppRoot({ container }: { container?: Container }) {
     <DIProvider container={container}>
       <PaperProvider theme={theme}>
         <SnackbarProvider>
-          <ProjectsProvider>
-            <FollowsProvider>
-              <NavigationContainer theme={navigationTheme}>
-                <RootNavigator />
-              </NavigationContainer>
-            </FollowsProvider>
-          </ProjectsProvider>
+          <SessionProvider>
+            <ProjectsProvider>
+              <FollowsProvider>
+                <NavigationContainer theme={navigationTheme}>
+                  <Shell />
+                </NavigationContainer>
+              </FollowsProvider>
+            </ProjectsProvider>
+          </SessionProvider>
         </SnackbarProvider>
       </PaperProvider>
     </DIProvider>
   );
+}
+
+// El splash sigue hasta que se recupera la sesion guardada: asi la primera
+// pantalla ya sabe si va el login o la app.
+function Shell() {
+  const { ready } = useSession();
+  useEffect(() => {
+    if (ready) SplashScreen.hide();
+  }, [ready]);
+  return ready ? <RootNavigator /> : null;
 }
