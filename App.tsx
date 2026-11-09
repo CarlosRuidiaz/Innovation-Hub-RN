@@ -10,11 +10,14 @@ import React, { useEffect, useState } from "react";
 import { useColorScheme } from "react-native";
 import { PaperProvider } from "react-native-paper";
 
-
+import { Container } from "./src/core/di/container";
 import { DIProvider } from "./src/core/di/DIProvider";
+import { createLocalContainer } from "./src/core/di/localContainer";
+import { SnackbarProvider } from "./src/core/feedback/SnackbarProvider";
+import { MissingConfigScreen } from "./src/core/roble/MissingConfigScreen";
+import { missingRobleConfig, useLocalData } from "./src/core/roble/robleConfig";
 import RootNavigator from "./src/navigation/RootNavigator";
 import { darkTheme, lightTheme } from "./src/theme/theme";
-
 
 // Expo Go doesn't support customizing the splash screen; only apply options in development/production builds.
 const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
@@ -25,10 +28,21 @@ if (!isExpoGo) {
   SplashScreen.setOptions({ duration: 400, fade: true });
 }
 
+// Con datos en memoria se crea una sola vez: es el «servidor» de esta corrida.
+const localContainer = useLocalData ? createLocalContainer() : undefined;
+
 export default function App() {
+  return <AppRoot container={localContainer} />;
+}
+
+// `container` deja que las pruebas cambien los datasources de Roble por los de memoria.
+export function AppRoot({ container }: { container?: Container }) {
   const [appIsReady, setAppIsReady] = useState(false);
   const scheme = useColorScheme();
   const theme = scheme === "dark" ? darkTheme : lightTheme;
+  // Sin `.env` no hay a que servidor conectarse: mejor decirlo en pantalla que
+  // fallar despues con un error de red que no explica nada.
+  const missing = container ? [] : missingRobleConfig();
 
   useEffect(() => {
     async function prepare() {
@@ -66,7 +80,13 @@ export default function App() {
     return null;
   }
 
-  if (__DEV__) console.log("Current theme:", scheme);
+  if (missing.length > 0) {
+    return (
+      <PaperProvider theme={theme}>
+        <MissingConfigScreen missing={missing} />
+      </PaperProvider>
+    );
+  }
 
   const navigationTheme = {
     ...(scheme === "dark" ? DarkTheme : DefaultTheme),
@@ -82,11 +102,13 @@ export default function App() {
   };
 
   return (
-    <DIProvider>
+    <DIProvider container={container}>
       <PaperProvider theme={theme}>
-        <NavigationContainer theme={navigationTheme}>
-          <RootNavigator />
-        </NavigationContainer>
+        <SnackbarProvider>
+          <NavigationContainer theme={navigationTheme}>
+            <RootNavigator />
+          </NavigationContainer>
+        </SnackbarProvider>
       </PaperProvider>
     </DIProvider>
   );

@@ -7,7 +7,8 @@ const DIContext = createContext<Container | null>(null);
 
 type Props = {
   children: React.ReactNode;
-  // Optional: pass a container with fakes (e.g. in tests). Defaults to the app's container.
+  // Opcional: un contenedor con datos en memoria o falsos (en las pruebas, o
+  // con `npm run start:local`). Por omision, el de Roble.
   container?: Container;
 };
 
@@ -20,4 +21,10 @@ export function useDI() {
   const c = useContext(DIContext);
   if (!c) throw new Error("DIProvider missing");
   return c;
+}
+
+// Pide una dependencia al contenedor: `const repo = useInject<ProjectRepository>(TOKENS.ProjectRepo)`.
+export function useInject<T>(token: symbol): T {
+  const c = useDI();
+  return useMemo(() => c.resolve<T>(token), [c, token]);
 }
