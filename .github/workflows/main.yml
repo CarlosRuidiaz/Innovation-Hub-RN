@@ -5,58 +5,27 @@ on:
   pull_request:
 
 jobs:
-  unit-widget:
-    name: Pruebas unitarias y de widget
+  checks:
+    name: Typecheck, lint y pruebas
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - uses: actions/setup-node@v4
         with:
-          channel: stable
-          flutter-version: 3.47.4
-          cache: true
+          node-version: 24
+          cache: npm
 
       - name: Dependencias
-        run: flutter pub get
+        run: npm ci
 
-      - name: Analisis
-        run: flutter analyze --no-fatal-infos
+      - name: Typecheck
+        run: npm run typecheck
 
-      - name: Pruebas unitarias
-        run: flutter test test/unit
+      - name: Lint
+        run: npm run lint
 
-      - name: Pruebas de widget
-        run: flutter test test/widget
-
-  integration:
-    name: Pruebas de integracion en Chrome
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          flutter-version: 3.47.4
-          cache: true
-
-      - name: Dependencias
-        run: flutter pub get
-
-      - name: Chromedriver
-        uses: nanasess/setup-chromedriver@v2
-
-      - name: Servidor de chromedriver
-        run: chromedriver --port=4444 &
-
-      - name: Pruebas de integracion
-        run: >
-          flutter drive
-          --driver=test_driver/integration_test.dart
-          --target=integration_test/app_test.dart
-          -d web-server
-          --browser-name=chrome
-          --headless
+      # Corren sin Roble: con datasources falsos o en memoria, y sin .env.
+      - name: Pruebas
+        run: npm run test:ci
