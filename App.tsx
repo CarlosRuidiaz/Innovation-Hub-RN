@@ -16,6 +16,8 @@ import { createLocalContainer } from "./src/core/di/localContainer";
 import { SnackbarProvider } from "./src/core/feedback/SnackbarProvider";
 import { MissingConfigScreen } from "./src/core/roble/MissingConfigScreen";
 import { missingRobleConfig, useLocalData } from "./src/core/roble/robleConfig";
+import { FollowsProvider } from "./src/features/follow/presentation/context/FollowsContext";
+import { ProjectsProvider } from "./src/features/project/presentation/context/ProjectsContext";
 import RootNavigator from "./src/navigation/RootNavigator";
 import { darkTheme, lightTheme } from "./src/theme/theme";
 
@@ -105,9 +107,13 @@ export function AppRoot({ container }: { container?: Container }) {
     <DIProvider container={container}>
       <PaperProvider theme={theme}>
         <SnackbarProvider>
-          <NavigationContainer theme={navigationTheme}>
-            <RootNavigator />
-          </NavigationContainer>
+          <ProjectsProvider>
+            <FollowsProvider>
+              <NavigationContainer theme={navigationTheme}>
+                <RootNavigator />
+              </NavigationContainer>
+            </FollowsProvider>
+          </ProjectsProvider>
         </SnackbarProvider>
       </PaperProvider>
     </DIProvider>
