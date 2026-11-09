@@ -1,5 +1,6 @@
 import { AppCatalogs } from "../catalogs";
-import { Row, toFlutterIso } from "../roble/guard";
+import { Row } from "../roble/guard";
+import { toFlutterIso } from "../roble/rowFormat";
 
 // El backend falso: las mismas filas que devolveria Roble, en memoria.
 //

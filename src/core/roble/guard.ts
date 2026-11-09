@@ -44,16 +44,4 @@ export function textOrNull(value: unknown): string | null {
   return text ? text : null;
 }
 
-// Una fecha como la escribe Flutter con `DateTime.toIso8601String()`: hora
-// local y sin zona, `2026-10-30T00:00:00.000`. `toISOString()` daria la hora en
-// UTC con una `Z`, y la app Flutter, que comparte las tablas, leeria otra hora.
-export function toFlutterIso(date: Date): string {
-  const two = (n: number) => String(n).padStart(2, "0");
-  return (
-    `${String(date.getFullYear()).padStart(4, "0")}-${two(date.getMonth() + 1)}-${two(date.getDate())}` +
-    `T${two(date.getHours())}:${two(date.getMinutes())}:${two(date.getSeconds())}` +
-    `.${String(date.getMilliseconds()).padStart(3, "0")}`
-  );
-}
-
 export type Row = Record<string, any>;
