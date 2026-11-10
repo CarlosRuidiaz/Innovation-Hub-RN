@@ -217,7 +217,7 @@ export default function MyProjectsScreen({ onExplore }: { onExplore?: () => void
 
                           <MaterialIcons
                             name="chevron-right"
-                            size={24}
+                            size={AppTokens.iconSize}
                             color={AppColors.secondary}
                           />
                         </Pressable>
@@ -263,9 +263,9 @@ export default function MyProjectsScreen({ onExplore }: { onExplore?: () => void
 }
 
 MyProjectsScreen.key = "MyProjectsView";
-MyProjectsScreen.createdTabKey = "TabCreated";
-MyProjectsScreen.participatingTabKey = "TabParticipating";
-MyProjectsScreen.followingTabKey = "TabFollowing";
+MyProjectsScreen.createdTabKey = "TabCreados";
+MyProjectsScreen.participatingTabKey = "TabParticipo";
+MyProjectsScreen.followingTabKey = "TabSiguiendo";
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: AppColors.paper },

@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   header: { gap: AppTokens.gapXs },
-  title: { ...AppTypography.displayLarge, fontSize: 24, textAlign: "left" },
+  title: { ...AppTypography.headlineMedium, textAlign: "left" },
   projectName: { ...AppTypography.bodyMedium, color: AppColors.secondary },
   section: { gap: AppTokens.gapS },
   sectionTitle: {

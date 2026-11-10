@@ -117,7 +117,7 @@ export default function ApplicationStatusScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.iconContainer}>
-        <MaterialIcons name={iconName} size={64} color={iconColor} />
+        <MaterialIcons name={iconName} size={AppTokens.emptyIconSize} color={iconColor} />
       </View>
 
       <View style={styles.pillContainer}>{statusPill}</View>

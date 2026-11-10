@@ -136,7 +136,7 @@ describe("ApplicantsScreen (applicants_page_test.dart y Kora 18K)", () => {
     expect(screen.getByText("Diseño UX")).toBeTruthy();
     expect(screen.getByText("Investigación")).toBeTruthy();
     expect(screen.getByText("“Ya hice pruebas de usabilidad en otro proyecto.”")).toBeTruthy();
-    expect(screen.getByText("1 postulación pendiente")).toBeTruthy();
+    expect(screen.getByText("1 postulaciones pendientes")).toBeTruthy();
   });
 
   it("los dos botones llaman a aceptar y rechazar", async () => {

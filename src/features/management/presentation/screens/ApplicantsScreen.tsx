@@ -38,7 +38,7 @@ function statusLabel(status: ApplicationStatus): string {
     case "withdrawn":
       return "Cancelada";
     case "left":
-      return "Salida";
+      return "Salió";
     case "removed":
       return "Removido";
     default:
@@ -116,7 +116,7 @@ export default function ApplicantsScreen() {
         <View style={styles.header}>
           <Text style={styles.projectTitle}>{project?.title ?? ""}</Text>
           <View style={styles.membersRow}>
-            <MaterialIcons name="people-outline" size={18} color={AppColors.secondary} />
+            <MaterialIcons name="people-outline" size={AppTokens.buttonIconSize} color={AppColors.secondary} />
             <Text style={styles.membersText}>
               {`${project?.currentMembers ?? 0} de ${project?.maxMembers ?? 0} miembros`}
             </Text>
@@ -126,7 +126,7 @@ export default function ApplicantsScreen() {
         <View style={styles.divider} />
 
         <Text style={styles.pendingHeader}>
-          {`${pendingCount} ${pendingCount === 1 ? "postulación pendiente" : "postulaciones pendientes"}`}
+          {`${pendingCount} postulaciones pendientes`}
         </Text>
 
         {isLoading && applicants.length === 0 ? (
@@ -213,7 +213,7 @@ function ApplicantCard({
                 onPress={() => onDecide("rejected")}
                 style={styles.squareButtonReject}
               >
-                <MaterialIcons name="close" size={24} color={AppColors.ink} />
+                <MaterialIcons name="close" size={AppTokens.iconSize} color={AppColors.ink} />
               </Pressable>
 
               <View style={styles.acceptButtonWrapper}>
@@ -225,7 +225,7 @@ function ApplicantCard({
                   onPress={() => onDecide("accepted")}
                   style={styles.squareButtonAccept}
                 >
-                  <MaterialIcons name="check" size={24} color={AppColors.white} />
+                  <MaterialIcons name="check" size={AppTokens.iconSize} color={AppColors.white} />
                 </Pressable>
               </View>
             </View>
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     paddingBottom: AppTokens.gapS,
     gap: AppTokens.gapXs,
   },
-  projectTitle: { ...AppTypography.headlineMedium, fontSize: 24 },
+  projectTitle: { ...AppTypography.headlineMedium },
   membersRow: { flexDirection: "row", alignItems: "center", gap: AppTokens.gapXs },
   membersText: { ...AppTypography.bodySmall, color: AppColors.ink },
   divider: {
@@ -327,9 +327,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   avatarText: {
+    ...AppTypography.labelLarge,
     fontFamily: AppFonts.bodyBold,
-    color: AppColors.ink,
-    fontSize: 14,
   },
   applicantInfo: {
     flex: 1,
@@ -397,17 +396,14 @@ const styles = StyleSheet.create({
   },
   quoteText: {
     flex: 1,
-    fontFamily: AppFonts.body,
+    ...AppTypography.bodyMedium,
     fontStyle: "italic",
-    fontSize: 13.5,
-    lineHeight: 18,
-    color: AppColors.ink,
   },
   bottomBar: {
     padding: AppTokens.gapL,
     backgroundColor: AppColors.paper,
-    borderTopWidth: 1,
-    borderColor: "rgba(23, 21, 15, 0.1)",
+    borderTopWidth: AppTokens.borderWidth,
+    borderColor: AppColors.hatch,
     gap: AppTokens.gapS,
   },
   bottomBarNote: {

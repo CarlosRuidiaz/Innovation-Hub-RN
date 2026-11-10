@@ -26,7 +26,7 @@ type Loaded = { userId: string; profile: Profile | null };
 // cargado para otra cuenta no se muestra nunca.
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const repository = useInject<ProfileRepository>(TOKENS.ProfileRepo);
-  const { user, ready } = useSession();
+  const { user } = useSession();
   const userId = user?.userId ?? null;
 
   const [loaded, setLoaded] = useState<Loaded | null>(null);
@@ -66,7 +66,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   }, [userId, load]);
 
   const current = userId != null && loaded?.userId === userId ? loaded : null;
-  const isLoading = !ready || (userId != null && current == null) || refreshing;
+  const isLoading = (userId != null && current == null) || refreshing;
 
   const value = useMemo<ProfileViewModel>(
     () => ({ profile: current?.profile ?? null, isLoading, refresh }),
