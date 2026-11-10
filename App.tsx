@@ -1,5 +1,11 @@
-import { Archivo_400Regular, Archivo_600SemiBold, Archivo_700Bold } from "@expo-google-fonts/archivo";
-import { Fraunces_600SemiBold, Fraunces_700Bold } from "@expo-google-fonts/fraunces";
+import {
+  Archivo_400Regular,
+  Archivo_400Regular_Italic,
+  Archivo_500Medium,
+  Archivo_600SemiBold,
+  Archivo_700Bold,
+} from "@expo-google-fonts/archivo";
+import { Fraunces_600SemiBold, Fraunces_600SemiBold_Italic, Fraunces_700Bold } from "@expo-google-fonts/fraunces";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
@@ -66,8 +72,11 @@ export function AppRoot({ container }: { container?: Container }) {
           ...MaterialCommunityIcons.font,
           ...MaterialIcons.font,
           Fraunces_600SemiBold,
+          Fraunces_600SemiBold_Italic,
           Fraunces_700Bold,
           Archivo_400Regular,
+          Archivo_400Regular_Italic,
+          Archivo_500Medium,
           Archivo_600SemiBold,
           Archivo_700Bold,
         });

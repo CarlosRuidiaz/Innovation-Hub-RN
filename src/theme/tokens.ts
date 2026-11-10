@@ -30,6 +30,9 @@ export const AppColors = {
   // de fondo y al 38 % en el texto.
   disabledBackground: "rgba(23, 21, 15, 0.12)",
   disabledText: "rgba(23, 21, 15, 0.38)",
+  // Kora: el papel al 85 %, para el texto chico sobre el bloque persimmon de la
+  // frase de la comunidad.
+  paperMuted: "rgba(245, 240, 230, 0.85)",
 } as const;
 
 // Colores de las seis etapas de un proyecto. Viven en la UI: la entidad no sabe
@@ -108,6 +111,13 @@ export const AppTokens = {
   tabHeight: 46,
   tabIndicatorHeight: 2,
   tabDividerHeight: 1,
+  // Kora: la frase de la comunidad (59 de alto), la franja de cifras con sus
+  // separadores, los contadores de las tarjetas y los botones cuadrados de
+  // aceptar y rechazar en la gestion de postulantes.
+  communityBannerHeight: 59,
+  statDividerWidth: 1,
+  counterIconSize: 14,
+  squareButtonSize: 42,
 } as const;
 
 // Las familias cargadas en `App.tsx`. En React Native cada peso es una fuente
@@ -115,7 +125,13 @@ export const AppTokens = {
 export const AppFonts = {
   displaySemiBold: "Fraunces_600SemiBold",
   displayBold: "Fraunces_700Bold",
+  // Kora: la frase de la comunidad.
+  displaySemiBoldItalic: "Fraunces_600SemiBold_Italic",
   body: "Archivo_400Regular",
+  // Kora: el mensaje del postulante.
+  bodyItalic: "Archivo_400Regular_Italic",
+  // Kora: las etiquetas de las cifras.
+  bodyMedium: "Archivo_500Medium",
   bodySemiBold: "Archivo_600SemiBold",
   bodyBold: "Archivo_700Bold",
 } as const;
@@ -153,6 +169,16 @@ export const AppTypography = {
   field: { fontFamily: AppFonts.body, fontSize: 14, color: AppColors.secondary },
   // Texto de una pildora.
   pill: { fontFamily: AppFonts.bodySemiBold, fontSize: 11.5, color: AppColors.ink, lineHeight: 14 },
+  // Kora: "COMUNIDAD DE INNOVACIÓN" y la frase de abajo, sobre persimmon.
+  communityKicker: { fontFamily: AppFonts.bodySemiBold, fontSize: 10.5, color: AppColors.paperMuted, letterSpacing: 1.2 },
+  communityPhrase: { fontFamily: AppFonts.displaySemiBoldItalic, fontSize: 17, color: AppColors.paper },
+  // Kora: las cifras de Explorar, el numero y su etiqueta.
+  statNumber: { fontFamily: AppFonts.displayBold, fontSize: 22, color: AppColors.persimmon },
+  statLabel: { fontFamily: AppFonts.bodyMedium, fontSize: 11.5, color: AppColors.ink, lineHeight: 14 },
+  // Kora: los contadores de miembros y seguidores bajo el icono de la tarjeta.
+  counter: { fontFamily: AppFonts.bodySemiBold, fontSize: 11, color: AppColors.secondary },
+  // Kora: el mensaje del postulante, en cursiva.
+  quote: { fontFamily: AppFonts.bodyItalic, fontSize: 13.5, color: AppColors.ink },
   // Las iniciales dentro de un avatar: blancas sobre color en el equipo, de
   // tinta y mas chicas en las tareas.
   avatarInitials: { fontFamily: AppFonts.bodyBold, fontSize: 16, color: AppColors.white },
