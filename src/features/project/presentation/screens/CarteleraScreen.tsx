@@ -6,6 +6,8 @@ import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Tex
 import { EmptyState } from "@/src/core/components/EmptyState";
 import { ProfileSkillsLine } from "@/src/features/profile/presentation/components/ProfileSkillsLine";
 import { Project } from "@/src/features/project/domain/entities/Project";
+import { CommunityBanner } from "@/src/features/project/presentation/components/CommunityBanner";
+import { CommunityStats } from "@/src/features/project/presentation/components/CommunityStats";
 import { ExploreSearchRow } from "@/src/features/project/presentation/components/ExploreSearchRow";
 import { ProjectCard } from "@/src/features/project/presentation/components/ProjectCard";
 import { ShowcaseBanner } from "@/src/features/project/presentation/components/ShowcaseBanner";
@@ -17,9 +19,11 @@ type Tab = 0 | 1;
 
 // La cartelera con sus dos pestañas. Reemplaza a `cartelera_view.dart`.
 //
-// Como en Flutter, lo de arriba de cada pestaña queda fijo ("Proyectos que
-// buscan…" en la primera; la busqueda y el banner en la segunda) y solo la
-// lista se desliza y se refresca.
+// En "Explorar", lo de arriba queda fijo (la busqueda, las cifras de Kora y el
+// banner) y solo la lista se desliza y se refresca. En "Para tus habilidades",
+// la frase de la comunidad (Kora) y "Proyectos que buscan…" van como
+// encabezado de la lista: al deslizar, toda la pantalla queda para los
+// proyectos.
 export default function CarteleraScreen() {
   const [activeTab, setActiveTab] = useState<Tab>(0);
   const { projects, isLoading, mySkills, projectsForMySkills, allVisibleProjects, refresh, clearFilters } =
@@ -31,7 +35,7 @@ export default function CarteleraScreen() {
   const firstLoad = isLoading && projects.length === 0;
   const sinHabilidades = mySkills.length === 0;
 
-  const list = (data: Project[], testID: string, empty: React.ReactElement) => (
+  const list = (data: Project[], testID: string, empty: React.ReactElement, header?: React.ReactElement) => (
     <FlatList
       testID={testID}
       data={data}
@@ -43,6 +47,7 @@ export default function CarteleraScreen() {
           onPress={() => navigation.navigate("ProjectDetail", { project: item })}
         />
       )}
+      ListHeaderComponent={header}
       ListEmptyComponent={empty}
       contentContainerStyle={data.length === 0 ? styles.emptyList : styles.list}
       refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} colors={[AppColors.persimmon]} tintColor={AppColors.persimmon} />}
@@ -58,7 +63,6 @@ export default function CarteleraScreen() {
 
       {activeTab === 0 ? (
         <View style={styles.flex}>
-          <ProfileSkillsLine />
           {firstLoad ? (
             <Loading />
           ) : (
@@ -77,12 +81,17 @@ export default function CarteleraScreen() {
                 actionLabel="Explorar proyectos"
                 onAction={() => setActiveTab(1)}
               />,
+              <View>
+                <CommunityBanner />
+                <ProfileSkillsLine />
+              </View>,
             )
           )}
         </View>
       ) : (
         <View style={styles.flex}>
           <ExploreSearchRow />
+          <CommunityStats />
           <ShowcaseBanner />
           {firstLoad ? (
             <Loading />
@@ -150,5 +159,5 @@ const styles = StyleSheet.create({
   indicatorActive: { backgroundColor: AppColors.persimmon },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   list: { paddingTop: AppTokens.gapM },
-  emptyList: { flexGrow: 1 },
+  emptyList: { flexGrow: 1, paddingTop: AppTokens.gapM },
 });

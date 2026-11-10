@@ -4,12 +4,14 @@ import { useInject } from "@/src/core/di/DIProvider";
 import { TOKENS } from "@/src/core/di/tokens";
 import { useSession } from "@/src/features/auth/presentation/context/SessionContext";
 import { useProfile } from "@/src/features/profile/presentation/context/ProfileContext";
-import { Project, matchesAnySkill } from "@/src/features/project/domain/entities/Project";
+import { InnovationTypeKey, innovationTypeOf } from "@/src/core/catalogs";
+import { acceptsApplications, Project, matchesAnySkill } from "@/src/features/project/domain/entities/Project";
 import { ProjectStage } from "@/src/features/project/domain/entities/ProjectStage";
 import { ProjectRepository } from "@/src/features/project/domain/repositories/ProjectRepository";
 
 // Reemplaza a `ProjectController` de Flutter: la lista de proyectos y los
-// filtros (busqueda, habilidades, programas, etapas y tags), que comparten la
+// filtros (busqueda, habilidades, programas, etapas, tags y, con Kora, tipo y
+// "Buscan equipo"), que comparten la
 // cartelera y la pantalla de filtros. Filtrar y ordenar es trabajo suyo, no de
 // la lista.
 //
@@ -26,6 +28,12 @@ export type ProjectsValue = {
   programFilters: string[];
   stageFilters: ProjectStage[];
   tagFilters: string[];
+  // Kora: los tipos de innovacion marcados (un proyecto sin tipo es "Otros") y
+  // el filtro "Buscan equipo", que deja solo los que aceptan postulaciones.
+  typeFilters: InnovationTypeKey[];
+  recruitingOnly: boolean;
+  // Kora: las cifras de Explorar, sobre la lista completa y sin filtros.
+  stats: { projects: number; ideas: number; recruiting: number };
   // Cuantos GRUPOS tienen algo marcado (el numero del boton "Filtros").
   activeFilterCount: number;
   // Si hay algun filtro puesto, contando la busqueda.
@@ -37,15 +45,25 @@ export type ProjectsValue = {
   // Acciones.
   refresh: () => Promise<void>;
   setSearchQuery: (q: string) => void;
-  applyFilters: (opts: {
-    skills: string[];
-    programs: string[];
-    stages: ProjectStage[];
-    tags: string[];
-  }) => void;
+  applyFilters: (opts: FilterSelection) => void;
   clearFilters: () => void;
+  // Kora: tocar una cifra. "Ideas" deja solo la etapa Idea y "Buscan equipo"
+  // activa su filtro; "Proyectos" es `clearFilters`.
+  showOnlyIdeas: () => void;
+  showRecruiting: () => void;
   // Llama al repositorio y recarga la lista (para despues de crear un proyecto).
   createProject: (project: Project) => Promise<Project>;
+};
+
+// Lo que vuelca la pantalla de filtros. Los dos grupos de Kora son opcionales:
+// sin ellos, quedan como estaban.
+export type FilterSelection = {
+  skills: string[];
+  programs: string[];
+  stages: ProjectStage[];
+  tags: string[];
+  types?: InnovationTypeKey[];
+  recruiting?: boolean;
 };
 
 const ProjectsContext = createContext<ProjectsValue | undefined>(undefined);
@@ -70,6 +88,8 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
   const [programFilters, setProgramFilters] = useState<string[]>([]);
   const [stageFilters, setStageFilters] = useState<ProjectStage[]>([]);
   const [tagFilters, setTagFilters] = useState<string[]>([]);
+  const [typeFilters, setTypeFilters] = useState<InnovationTypeKey[]>([]);
+  const [recruitingOnly, setRecruitingOnly] = useState(false);
 
   // Solo vale la ultima peticion: una respuesta vieja no pisa la nueva.
   const requestRef = useRef(0);
@@ -126,6 +146,8 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       setProgramFilters([]);
       setStageFilters([]);
       setTagFilters([]);
+      setTypeFilters([]);
+      setRecruitingOnly(false);
       setSearchQueryState("");
     }
   }
@@ -147,10 +169,22 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       if (programFilters.length > 0 && !programFilters.includes(p.academicProgram)) return false;
       if (skillFilters.length > 0 && !matchesAnySkill(p, skillFilters)) return false;
       if (tagFilters.length > 0 && !p.tags.some((t) => tagFilters.includes(t))) return false;
+      if (typeFilters.length > 0 && !typeFilters.includes(innovationTypeOf(p.innovationType).key)) return false;
+      if (recruitingOnly && !acceptsApplications(p)) return false;
       if (q && !p.title.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [projects, searchQuery, skillFilters, programFilters, stageFilters, tagFilters]);
+  }, [projects, searchQuery, skillFilters, programFilters, stageFilters, tagFilters, typeFilters, recruitingOnly]);
+
+  // Las cifras de Explorar: con la lista ya cargada, sin otra consulta.
+  const stats = useMemo(
+    () => ({
+      projects: projects.length,
+      ideas: projects.filter((p) => p.stage === "idea").length,
+      recruiting: projects.filter(acceptsApplications).length,
+    }),
+    [projects],
+  );
 
   // Cuantos grupos tienen algo marcado (la busqueda no cuenta).
   const activeFilterCount = useMemo(
@@ -158,8 +192,10 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       (skillFilters.length > 0 ? 1 : 0) +
       (programFilters.length > 0 ? 1 : 0) +
       (stageFilters.length > 0 ? 1 : 0) +
-      (tagFilters.length > 0 ? 1 : 0),
-    [skillFilters, programFilters, stageFilters, tagFilters],
+      (tagFilters.length > 0 ? 1 : 0) +
+      (typeFilters.length > 0 ? 1 : 0) +
+      (recruitingOnly ? 1 : 0),
+    [skillFilters, programFilters, stageFilters, tagFilters, typeFilters, recruitingOnly],
   );
 
   const hasActiveFilters = activeFilterCount > 0 || searchQuery.trim().length > 0;
@@ -169,11 +205,13 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
   // Vuelca de golpe lo que la pantalla de filtros traia. Solo se aplica al
   // pulsar "Aplicar": salir con atras deja los filtros como estaban.
   const applyFilters = useCallback(
-    (opts: { skills: string[]; programs: string[]; stages: ProjectStage[]; tags: string[] }) => {
+    (opts: FilterSelection) => {
       setSkillFilters([...opts.skills]);
       setProgramFilters([...opts.programs]);
       setStageFilters([...opts.stages]);
       setTagFilters([...opts.tags]);
+      if (opts.types) setTypeFilters([...opts.types]);
+      if (opts.recruiting != null) setRecruitingOnly(opts.recruiting);
     },
     [],
   );
@@ -183,8 +221,17 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
     setProgramFilters([]);
     setStageFilters([]);
     setTagFilters([]);
+    setTypeFilters([]);
+    setRecruitingOnly(false);
     setSearchQueryState("");
   }, []);
+
+  const showOnlyIdeas = useCallback(() => {
+    clearFilters();
+    setStageFilters(["idea"]);
+  }, [clearFilters]);
+
+  const showRecruiting = useCallback(() => setRecruitingOnly(true), []);
 
   // Crear un proyecto y volver a cargar la lista para que la cartelera lo vea.
   const createProject = useCallback(
@@ -206,6 +253,9 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       programFilters,
       stageFilters,
       tagFilters,
+      typeFilters,
+      recruitingOnly,
+      stats,
       activeFilterCount,
       hasActiveFilters,
       projectsForMySkills,
@@ -214,6 +264,8 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       setSearchQuery,
       applyFilters,
       clearFilters,
+      showOnlyIdeas,
+      showRecruiting,
       createProject,
     }),
     [
@@ -225,6 +277,9 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       programFilters,
       stageFilters,
       tagFilters,
+      typeFilters,
+      recruitingOnly,
+      stats,
       activeFilterCount,
       hasActiveFilters,
       projectsForMySkills,
@@ -233,6 +288,8 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       setSearchQuery,
       applyFilters,
       clearFilters,
+      showOnlyIdeas,
+      showRecruiting,
       createProject,
     ],
   );

@@ -10,6 +10,7 @@ import { ApplicationAction } from "@/src/features/application/presentation/compo
 import { useMyApplication } from "@/src/features/application/presentation/hooks/useMyApplication";
 import { FollowButton } from "@/src/features/follow/presentation/components/FollowButton";
 import { ActivePollsBlock } from "@/src/features/poll/presentation/components/ActivePollsBlock";
+import { InnovationTypeChip } from "@/src/features/project/presentation/components/InnovationTypeChip";
 import { isFull } from "@/src/features/project/domain/entities/Project";
 import { RootStackParamList } from "@/src/navigation/types";
 import { AppColors, AppFonts, AppTokens, AppTypography } from "@/src/theme/tokens";
@@ -33,6 +34,7 @@ export default function ProjectDetailScreen() {
     <ScrollView testID={ProjectDetailScreen.key} style={styles.root} contentContainerStyle={styles.scroll}>
       <View style={styles.chipRow}>
         <StageChip stage={project.stage} />
+        <InnovationTypeChip type={project.innovationType} testID={ProjectDetailScreen.typeChipKey} />
         {project.tags.map((tag) => (
           <Pill key={tag} label={tag} />
         ))}
@@ -117,6 +119,7 @@ export default function ProjectDetailScreen() {
 ProjectDetailScreen.key = "ProjectDetailPage";
 ProjectDetailScreen.applicantsButtonKey = "ButtonApplicants";
 ProjectDetailScreen.workspaceButtonKey = "ButtonWorkspace";
+ProjectDetailScreen.typeChipKey = "ChipProjectType";
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: AppColors.paper },
