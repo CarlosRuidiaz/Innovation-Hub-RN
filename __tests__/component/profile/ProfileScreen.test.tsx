@@ -107,7 +107,7 @@ describe("ProfileScreen (profile_view_test.dart y profile_view_error_test.dart)"
     expect(screen.getByText("Dart")).toBeTruthy();
     expect(await screen.findByText("Proyecto 1")).toBeTruthy();
     expect(screen.getByText("Líder")).toBeTruthy();
-    expect(screen.getByText("1 de 3 miembros")).toBeTruthy();
+    expect(screen.getByText("1/3")).toBeTruthy();
   });
 
   it("con el perfil fallando se ve el mensaje de error y boton reintentar", async () => {
