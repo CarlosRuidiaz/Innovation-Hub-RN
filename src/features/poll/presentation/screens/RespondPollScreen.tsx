@@ -35,9 +35,12 @@ export default function RespondPollScreen() {
     }
 
     setSending(true);
+    // Se vuelve a mirar justo antes de enviar: entre abrir la pantalla y
+    // pulsar Enviar pudo haber respondido en otro lado o haberse cerrado.
     const user = currentUser();
-    if (user == null || poll.id == null) {
+    if (user == null || poll.id == null || !(await vm.canRespond(poll))) {
       setSending(false);
+      snackbar("Ya no puedes responder esta encuesta.", { title: "Acceso denegado" });
       return;
     }
 

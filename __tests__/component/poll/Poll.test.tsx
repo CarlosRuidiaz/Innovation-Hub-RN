@@ -192,6 +192,61 @@ describe("RespondPollScreen", () => {
     expect(await screen.findByTestId(RespondPollScreen.commentFieldKey)).toBeTruthy();
     expect(screen.getAllByText("¿Por qué elegiste estas opciones? (Opcional)").length).toBeGreaterThan(0);
   });
+
+  // ─── No responder dos veces ───────────────────────────────────────────────
+
+  // Con sesion abierta: `respondidas` son las respuestas que ya tiene la encuesta.
+  async function abrirConSesion(respondidas: (userId: string) => PollResponse[]) {
+    const data = new DummyData({ latencyMs: 0 });
+    data.session = data.users[0];
+    const userId = String(data.users[0].userId);
+    data.pollResponses = [];
+    const container = createLocalContainer(data);
+    const repo = container.resolve<PollRepository>(TOKENS.PollRepo);
+    for (const r of respondidas(userId)) await repo.createResponse(r);
+    renderScreen(RespondPollScreen, container, {
+      params: { poll: encuestaActiva() },
+      routes: { PollResults: PollResultsScreen },
+    });
+    return { repo, userId };
+  }
+
+  async function elegirYEnviar() {
+    fireEvent.press(await screen.findByText("Opción A"));
+    fireEvent.press(screen.getByText("Sí"));
+    fireEvent.press(screen.getByTestId(RespondPollScreen.submitKey));
+  }
+
+  it("si ya respondio en otro lado avisa y no guarda una segunda respuesta", async () => {
+    const { repo } = await abrirConSesion((userId) => [newPollResponse({ pollId: "poll1", respondentId: userId, answers: [1, 1] })]);
+
+    await elegirYEnviar();
+
+    expect(await screen.findByText("Ya no puedes responder esta encuesta.")).toBeTruthy();
+    expect(screen.getByTestId(RespondPollScreen.key)).toBeTruthy();
+    expect(await repo.getResponsesForPoll("poll1")).toHaveLength(1);
+  });
+
+  it("sin sesion avisa y no envia", async () => {
+    const container = contenedor();
+    renderScreen(RespondPollScreen, container, { params: { poll: encuestaActiva() } });
+
+    await elegirYEnviar();
+
+    expect(await screen.findByText("Ya no puedes responder esta encuesta.")).toBeTruthy();
+    expect(await container.resolve<PollRepository>(TOKENS.PollRepo).getResponsesForPoll("poll1")).toHaveLength(0);
+  });
+
+  it("si no ha respondido guarda la respuesta y abre los resultados", async () => {
+    const { repo, userId } = await abrirConSesion(() => []);
+
+    await elegirYEnviar();
+
+    expect(await screen.findByTestId(PollResultsScreen.key)).toBeTruthy();
+    const guardadas = await repo.getResponsesForPoll("poll1");
+    expect(guardadas).toHaveLength(1);
+    expect(guardadas[0]).toMatchObject({ respondentId: userId, answers: [0, 0] });
+  });
 });
 
 // ─── PollResultsScreen ─────────────────────────────────────────────────────

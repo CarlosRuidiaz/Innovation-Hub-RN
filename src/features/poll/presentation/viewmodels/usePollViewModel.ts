@@ -143,14 +143,23 @@ export function usePollViewModel() {
 
   // Responde: si sigue abierta, no ha respondido y, si la encuesta tiene
   // audiencia, es de ese programa. Cada estudiante responde una sola vez.
+  //
+  // Si ya respondio se mira en el repositorio, no en lo cargado: lo cargado
+  // puede estar vacio porque fallo la carga o porque respondio en otra
+  // pantalla. Si no se pueden leer las respuestas, no deja responder.
   const canRespond = useCallback(
     async (poll: Poll) => {
       if (!isActive(poll)) return false;
 
       const user = currentUser();
-      if (user == null) return false;
+      if (user == null || poll.id == null) return false;
 
-      if (await hasResponded(poll.id ?? "")) return false;
+      try {
+        const responses = await pollRepo.getResponsesForPoll(poll.id);
+        if (responses.some((r) => r.respondentId === user.userId)) return false;
+      } catch {
+        return false;
+      }
 
       if (poll.audienceProgram != null) {
         const profile = await profileRepo.getCurrentProfile();
@@ -159,7 +168,7 @@ export function usePollViewModel() {
 
       return true;
     },
-    [currentUser, hasResponded, profileRepo],
+    [currentUser, pollRepo, profileRepo],
   );
 
   return useMemo(

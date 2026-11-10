@@ -257,6 +257,23 @@ describe("PollViewModel", () => {
       expect(await c.vm.canRespond(pollActiva())).toBe(false);
     });
 
+    it("rechaza si ya respondio aunque sus respuestas no se hayan cargado", async () => {
+      authRepo.currentUser = user("u1", "Ana");
+      pollRepo.responses.push(newPollResponse({ id: "r1", pollId: "poll_1", respondentId: "u1", answers: [0] }));
+      const c = await renderViewModel();
+
+      expect(await c.vm.canRespond(pollActiva())).toBe(false);
+    });
+
+    it("rechaza si no se pueden leer las respuestas de la encuesta", async () => {
+      authRepo.currentUser = user("u1", "Ana");
+      profileRepo.currentProfile = { ...profileRepo.currentProfile, id: "u1", academicProgram: "Ingenieria de Sistemas" };
+      const c = await renderViewModel();
+      pollRepo.shouldThrow = true;
+
+      expect(await c.vm.canRespond(pollActiva())).toBe(false);
+    });
+
     it("rechaza si el estudiante esta fuera de la audiencia", async () => {
       authRepo.currentUser = user("u2", "Carlos");
       profileRepo.currentProfile = { ...profileRepo.currentProfile, id: "u2", fullName: "Carlos", academicProgram: "Medicina" };
