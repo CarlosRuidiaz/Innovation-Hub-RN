@@ -25,6 +25,20 @@ export class FollowRepositoryImpl implements FollowRepository {
     }, failure);
   }
 
+  // Lee los seguimientos activos de todos una sola vez y los cuenta por
+  // proyecto. No escribe nada: `follows` se sigue escribiendo como en Flutter.
+  countFollowers() {
+    return guardRoble(async () => {
+      const rows = await this.source.readFollows({ active: true });
+      const counts: Record<string, number> = {};
+      for (const follow of rows.map(FollowMapper.fromRow)) {
+        if (!follow.active || follow.projectId.length === 0) continue;
+        counts[follow.projectId] = (counts[follow.projectId] ?? 0) + 1;
+      }
+      return counts;
+    }, failure);
+  }
+
   // Dejar de seguir no borra la fila: la reusa, como `setFollow` de Flutter.
   // Solo se escribe si el estado cambia.
   toggleFollow(userId: string, projectId: string, active: boolean): Promise<Follow> {
