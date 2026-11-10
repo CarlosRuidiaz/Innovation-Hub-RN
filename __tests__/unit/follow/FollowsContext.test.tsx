@@ -7,6 +7,7 @@ import { createLocalContainer } from "@/src/core/di/localContainer";
 import { DIProvider } from "@/src/core/di/DIProvider";
 import { SnackbarProvider } from "@/src/core/feedback/SnackbarProvider";
 import { SessionProvider } from "@/src/features/auth/presentation/context/SessionContext";
+import { ProfileProvider } from "@/src/features/profile/presentation/context/ProfileContext";
 import { FollowsProvider, useFollows } from "@/src/features/follow/presentation/context/FollowsContext";
 import { safeAreaMetrics } from "@/__tests__/support/renderScreen";
 
@@ -17,7 +18,9 @@ function wrapper({ children }: { children: React.ReactNode }) {
   return (
     <DIProvider container={container}>
       <SnackbarProvider>
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+            <ProfileProvider>{children}</ProfileProvider>
+          </SessionProvider>
       </SnackbarProvider>
     </DIProvider>
   );
@@ -31,7 +34,9 @@ function wrapWithFollows({ children }: { children: React.ReactNode }) {
       <DIProvider container={container}>
         <SnackbarProvider>
           <SessionProvider>
+            <ProfileProvider>
             <FollowsProvider>{children}</FollowsProvider>
+          </ProfileProvider>
           </SessionProvider>
         </SnackbarProvider>
       </DIProvider>

@@ -8,6 +8,7 @@ import { AppCatalogs } from "@/src/core/catalogs";
 import { DIProvider } from "@/src/core/di/DIProvider";
 import { SnackbarProvider } from "@/src/core/feedback/SnackbarProvider";
 import { SessionProvider } from "@/src/features/auth/presentation/context/SessionContext";
+import { ProfileProvider } from "@/src/features/profile/presentation/context/ProfileContext";
 import { ProjectsProvider, useProjects } from "@/src/features/project/presentation/context/ProjectsContext";
 import { safeAreaMetrics } from "@/__tests__/support/renderScreen";
 
@@ -20,7 +21,9 @@ function wrapper({ children }: { children: React.ReactNode }) {
       <DIProvider container={container}>
         <SnackbarProvider>
           <SessionProvider>
+            <ProfileProvider>
             <ProjectsProvider>{children}</ProjectsProvider>
+          </ProfileProvider>
           </SessionProvider>
         </SnackbarProvider>
       </DIProvider>

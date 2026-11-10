@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { useInject } from "@/src/core/di/DIProvider";
 import { TOKENS } from "@/src/core/di/tokens";
@@ -25,35 +25,63 @@ const FollowsContext = createContext<FollowsValue | undefined>(undefined);
 export function FollowsProvider({ children }: { children: React.ReactNode }) {
   const repo = useInject<FollowRepository>(TOKENS.FollowRepo);
   const { user } = useSession();
+  const userId = user?.userId ?? null;
 
-  const [follows, setFollows] = useState<Follow[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // Los seguidos y de quien son: los de otra cuenta no se muestran nunca.
+  const [loaded, setLoaded] = useState<{ userId: string; follows: Follow[] } | null>(null);
+  const [reloading, setReloading] = useState(false);
+  const follows = useMemo(
+    () => (userId != null && loaded?.userId === userId ? loaded.follows : []),
+    [loaded, userId],
+  );
+
+  const [failedFor, setFailedFor] = useState<string | null>(null);
+  const isLoading = reloading || (userId != null && loaded?.userId !== userId && failedFor !== userId);
+
+  // Solo vale la ultima peticion: una respuesta vieja no pisa la nueva.
+  const requestRef = useRef(0);
+  const fetchFollows = useCallback(
+    async (forUser: string) => {
+      const request = ++requestRef.current;
+      let result: Follow[] | null;
+      try {
+        result = await repo.getFollowsByUser(forUser);
+      } catch {
+        // Sin red la lista queda vacia; no revienta la app.
+        result = null;
+      }
+      if (request === requestRef.current) {
+        if (result) setLoaded({ userId: forUser, follows: result });
+        else setFailedFor(forUser);
+      }
+    },
+    [repo],
+  );
+
+  // Recarga cada vez que entra otra cuenta, igual que `_sessionSub` en
+  // `FollowController` de Flutter. Al salir, `follows` queda vacia sola.
+  useEffect(() => {
+    if (!userId) return;
+    const request = ++requestRef.current;
+    repo.getFollowsByUser(userId).then(
+      (result) => {
+        if (request === requestRef.current) setLoaded({ userId, follows: result });
+      },
+      () => {
+        if (request === requestRef.current) setFailedFor(userId);
+      },
+    );
+  }, [userId, repo]);
 
   const loadFollows = useCallback(async () => {
-    if (!user?.userId) {
-      setFollows([]);
-      return;
-    }
-    setIsLoading(true);
+    if (!userId) return;
+    setReloading(true);
     try {
-      const loaded = await repo.getFollowsByUser(user.userId);
-      setFollows(loaded);
-    } catch {
-      // Sin red o sin sesion la lista queda vacia; no reventa la app.
+      await fetchFollows(userId);
     } finally {
-      setIsLoading(false);
+      setReloading(false);
     }
-  }, [repo, user]);
-
-  // Recarga cada vez que cambia el usuario (login/logout), igual que
-  // `_sessionSub` en `FollowController` de Flutter.
-  useEffect(() => {
-    if (user) {
-      loadFollows();
-    } else {
-      setFollows([]);
-    }
-  }, [user, loadFollows]);
+  }, [fetchFollows, userId]);
 
   const isFollowing = useCallback(
     (projectId: string) => follows.some((f) => f.projectId === projectId),
@@ -64,22 +92,22 @@ export function FollowsProvider({ children }: { children: React.ReactNode }) {
   // a recargar desde el servidor, como en Flutter.
   const toggleFollow = useCallback(
     async (projectId: string, active: boolean) => {
-      if (!user?.userId) return;
+      if (!userId) return;
       try {
-        const result = await repo.toggleFollow(user.userId, projectId, active);
-        setFollows((prev) => {
-          const index = prev.findIndex((f) => f.projectId === projectId);
+        const result = await repo.toggleFollow(userId, projectId, active);
+        setLoaded((prev) => {
+          const current = prev?.userId === userId ? prev.follows : [];
+          const index = current.findIndex((f) => f.projectId === projectId);
           if (active) {
-            return index === -1 ? [...prev, result] : prev;
-          } else {
-            return index !== -1 ? prev.filter((f) => f.projectId !== projectId) : prev;
+            return { userId, follows: index === -1 ? [...current, result] : current };
           }
+          return { userId, follows: current.filter((f) => f.projectId !== projectId) };
         });
       } catch {
         // Error silencioso: el icono no cambia; el usuario puede reintentar.
       }
     },
-    [repo, user],
+    [repo, userId],
   );
 
   const value = useMemo<FollowsValue>(

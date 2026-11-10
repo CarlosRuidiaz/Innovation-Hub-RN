@@ -3,6 +3,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { useInject } from "@/src/core/di/DIProvider";
 import { TOKENS } from "@/src/core/di/tokens";
 import { useSession } from "@/src/features/auth/presentation/context/SessionContext";
+import { useProfile } from "@/src/features/profile/presentation/context/ProfileContext";
 import { Project, matchesAnySkill } from "@/src/features/project/domain/entities/Project";
 import { ProjectStage } from "@/src/features/project/domain/entities/ProjectStage";
 import { ProjectRepository } from "@/src/features/project/domain/repositories/ProjectRepository";
@@ -27,6 +28,8 @@ export type ProjectsValue = {
   tagFilters: string[];
   // Cuantos GRUPOS tienen algo marcado (el numero del boton "Filtros").
   activeFilterCount: number;
+  // Si hay algun filtro puesto, contando la busqueda.
+  hasActiveFilters: boolean;
   // Los proyectos de la pestana "Para tus habilidades".
   projectsForMySkills: Project[];
   // Los de la pestana "Explorar", recortados por la busqueda y los filtros.
@@ -50,19 +53,17 @@ const ProjectsContext = createContext<ProjectsValue | undefined>(undefined);
 export function ProjectsProvider({ children }: { children: React.ReactNode }) {
   const repo = useInject<ProjectRepository>(TOKENS.ProjectRepo);
   const { user } = useSession();
+  const userId = user?.userId ?? null;
+  const { profile } = useProfile();
 
   const [projects, setProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  // Las habilidades del usuario de la sesion vienen del `extra` del usuario de Roble,
-  // igual que hace `ProfileController` en Flutter.
-  const mySkills: string[] = useMemo(() => {
-    if (!user) return [];
-    const extra = (user as unknown as Record<string, unknown> & { extra?: unknown }).extra;
-    if (extra && typeof extra === "object" && Array.isArray((extra as Record<string, unknown>).skills)) {
-      return (extra as Record<string, string[]>).skills;
-    }
-    return [];
-  }, [user]);
+  // Para que cuenta se cargo la lista por ultima vez (`undefined`: todavia no).
+  const [loadedFor, setLoadedFor] = useState<string | null | undefined>(undefined);
+  const [refreshing, setRefreshing] = useState(false);
+  const isLoading = refreshing || loadedFor !== userId;
+  // Las habilidades del perfil en sesion, como `mySkills` de `ProjectController`.
+  // Salen de `ProfileContext`: el usuario de la sesion no trae el `extra`.
+  const mySkills: string[] = useMemo(() => profile?.skills ?? [], [profile]);
 
   const [searchQuery, setSearchQueryState] = useState("");
   const [skillFilters, setSkillFilters] = useState<string[]>([]);
@@ -70,33 +71,64 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
   const [stageFilters, setStageFilters] = useState<ProjectStage[]>([]);
   const [tagFilters, setTagFilters] = useState<string[]>([]);
 
-  // Ref para que `createProject` pueda releer la lista actual sin atrapar el
-  // closure del primer render.
-  const projectsRef = useRef<Project[]>([]);
-  projectsRef.current = projects;
+  // Solo vale la ultima peticion: una respuesta vieja no pisa la nueva.
+  const requestRef = useRef(0);
+  const fetchProjects = useCallback(
+    async (forUser: string | null) => {
+      const request = ++requestRef.current;
+      let loaded: Project[] | null;
+      try {
+        loaded = await repo.getProjects();
+      } catch {
+        // Como en Flutter, un fallo deja la lista que ya habia.
+        loaded = null;
+      }
+      if (request === requestRef.current) {
+        if (loaded) setProjects(loaded);
+        setLoadedFor(forUser);
+      }
+    },
+    [repo],
+  );
 
-  const loadProjects = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const loaded = await repo.getProjects();
-      setProjects(loaded);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [repo]);
-
-  // Al cambiar el usuario (login/logout) se recarga la lista y se limpian
-  // filtros, igual que `_sesion` en Flutter.
+  // Al cambiar de cuenta se recarga la lista, igual que `_sesion` en Flutter.
   useEffect(() => {
-    loadProjects();
-    if (!user) {
+    const request = ++requestRef.current;
+    repo.getProjects().then(
+      (loaded) => {
+        if (request !== requestRef.current) return;
+        setProjects(loaded);
+        setLoadedFor(userId);
+      },
+      () => {
+        if (request === requestRef.current) setLoadedFor(userId);
+      },
+    );
+  }, [userId, repo]);
+
+  // `getProjects` de Flutter: deslizar para refrescar, y despues de crear.
+  const loadProjects = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchProjects(userId);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchProjects, userId]);
+
+  // Al cerrar sesion se limpian los filtros. Se hace durante el render al ver
+  // que cambio la cuenta, el patron de React para derivar estado de una prop.
+  const [lastUserId, setLastUserId] = useState(userId);
+  if (lastUserId !== userId) {
+    setLastUserId(userId);
+    if (userId == null) {
       setSkillFilters([]);
       setProgramFilters([]);
       setStageFilters([]);
       setTagFilters([]);
       setSearchQueryState("");
     }
-  }, [user, loadProjects]);
+  }
 
   // --- Listas derivadas (calculadas, no almacenadas) ---
 
@@ -129,6 +161,8 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       (tagFilters.length > 0 ? 1 : 0),
     [skillFilters, programFilters, stageFilters, tagFilters],
   );
+
+  const hasActiveFilters = activeFilterCount > 0 || searchQuery.trim().length > 0;
 
   const setSearchQuery = useCallback((q: string) => setSearchQueryState(q), []);
 
@@ -173,6 +207,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       stageFilters,
       tagFilters,
       activeFilterCount,
+      hasActiveFilters,
       projectsForMySkills,
       allVisibleProjects,
       refresh: loadProjects,
@@ -191,6 +226,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       stageFilters,
       tagFilters,
       activeFilterCount,
+      hasActiveFilters,
       projectsForMySkills,
       allVisibleProjects,
       loadProjects,
