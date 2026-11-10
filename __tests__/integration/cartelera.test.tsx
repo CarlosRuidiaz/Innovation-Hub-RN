@@ -4,7 +4,6 @@ import React from "react";
 import { AppRoot } from "@/App";
 import { DummyData } from "@/src/core/data/dummyData";
 import { createLocalContainer } from "@/src/core/di/localContainer";
-import { AppCatalogs } from "@/src/core/catalogs";
 import LoginScreen from "@/src/features/auth/presentation/screens/LoginScreen";
 import { HomeTabKeys } from "@/src/navigation/BottomBar";
 

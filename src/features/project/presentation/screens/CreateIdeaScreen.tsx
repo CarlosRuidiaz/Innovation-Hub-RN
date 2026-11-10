@@ -1,35 +1,34 @@
-import React, { useState } from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-
-import { PaperCard } from "@/src/core/components/PaperCard";
-import { Pill } from "@/src/core/components/Pill";
-import { TextField } from "@/src/core/components/TextField";
-import { PrimaryButton, SecondaryButton } from "@/src/core/components/Buttons";
-import { StageChip, stageLabelOf, stageColorOf } from "@/src/core/components/StageChip";
-import { skills as skillsCatalog, tags as tagsCatalog } from "@/src/core/catalogs";
-import { useSession } from "@/src/features/auth/presentation/context/SessionContext";
-import { useProjects } from "@/src/features/project/presentation/context/ProjectsContext";
-import { newProject } from "@/src/features/project/domain/entities/Project";
-import { PROJECT_STAGES, ProjectStage } from "@/src/features/project/domain/entities/ProjectStage";
-import { AppColors, AppTokens, AppTypography } from "@/src/theme/tokens";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "@/src/navigation/types";
+import React, { useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+
+import { PrimaryButton, SecondaryButton } from "@/src/core/components/Buttons";
+import { PaperCard } from "@/src/core/components/PaperCard";
+import { Pill } from "@/src/core/components/Pill";
+import { stageColorOf, stageLabelOf } from "@/src/core/components/StageChip";
+import { TextField } from "@/src/core/components/TextField";
+import { skills as skillsCatalog, tags as tagsCatalog } from "@/src/core/catalogs";
 import { useSnackbar } from "@/src/core/feedback/SnackbarProvider";
 import { errorMessage } from "@/src/core/roble/errorMessage";
+import { useProfile } from "@/src/features/profile/presentation/context/ProfileContext";
+import { newProject } from "@/src/features/project/domain/entities/Project";
+import { PROJECT_STAGES, ProjectStage } from "@/src/features/project/domain/entities/ProjectStage";
+import { useProjects } from "@/src/features/project/presentation/context/ProjectsContext";
+import { RootStackParamList } from "@/src/navigation/types";
+import { AppColors, AppTokens, AppTypography } from "@/src/theme/tokens";
 
-// Pantalla 10: crear una nueva idea de proyecto.
-// Reemplaza a `create_idea_page.dart`.
+const REQUIRED_FIELDS = 6;
+// El lider ya es uno: el equipo minimo es de dos.
+const MIN_MEMBERS = 2;
+
+// Pantalla 10: crear una idea de proyecto. Reemplaza a `create_idea_page.dart`.
+//
+// El programa y el lider salen del perfil de la sesion, como en Flutter.
 export default function CreateIdeaScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { user } = useSession();
+  const { profile } = useProfile();
   const { createProject } = useProjects();
   const snackbar = useSnackbar();
 
@@ -37,157 +36,107 @@ export default function CreateIdeaScreen() {
   const [problem, setProblem] = useState("");
   const [description, setDescription] = useState("");
   const [selectedStage, setSelectedStage] = useState<ProjectStage | null>(null);
-  const [maxMembers, setMaxMembers] = useState(2);
+  const [maxMembers, setMaxMembers] = useState(MIN_MEMBERS);
   const [skillsWanted, setSkillsWanted] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  // Mientras la peticion esta en vuelo el boton se apaga: un segundo toque con
+  // la red lenta crearia la misma idea dos veces.
   const [publishing, setPublishing] = useState(false);
 
-  // El programa academico y el id del lider vienen del usuario de sesion.
-  const extra = user ? (user as unknown as Record<string, unknown> & { extra?: unknown }).extra : null;
-  const academicProgram: string =
-    extra && typeof extra === "object" && typeof (extra as Record<string, unknown>).academicProgram === "string"
-      ? (extra as Record<string, string>).academicProgram
-      : "";
-  const leaderId = user?.userId ?? "";
-
-  // Campos obligatorios: titulo, problema, descripcion, etapa, habilidades.
-  // El programa viene del perfil (siempre lo hay si el perfil esta completo).
-  const camposCompletos =
+  const completed =
     (title.trim() ? 1 : 0) +
     (problem.trim() ? 1 : 0) +
     (description.trim() ? 1 : 0) +
     (selectedStage != null ? 1 : 0) +
-    (academicProgram ? 1 : 0) +
+    (profile?.academicProgram != null ? 1 : 0) +
     (skillsWanted.length > 0 ? 1 : 0);
+  // Sin un id de perfil la idea naceria sin lider.
+  const hasValidLeader = !!profile?.id;
+  const canPublish = completed === REQUIRED_FIELDS && hasValidLeader;
 
-  const TOTAL_REQUERIDOS = 6;
-  const canPublish = camposCompletos === TOTAL_REQUERIDOS && leaderId.length > 0 && !publishing;
+  const toggle = (setList: React.Dispatch<React.SetStateAction<string[]>>, value: string) =>
+    setList((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
 
-  function toggleSkill(skill: string) {
-    setSkillsWanted((prev) => (prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]));
-  }
+  const notify = (message: string) => snackbar(message, { title: "Publicar idea" });
 
-  function toggleTag(tag: string) {
-    setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
-  }
-
-  async function handlePublish() {
-    if (!canPublish) return;
+  async function publish() {
+    if (!canPublish || publishing || selectedStage == null) return;
+    if (!profile?.id) {
+      notify("No encontramos tu perfil. Vuelve a entrar e inténtalo de nuevo.");
+      return;
+    }
     setPublishing(true);
     try {
-      const project = newProject({
-        title: title.trim(),
-        problem: problem.trim(),
-        description: description.trim(),
-        stage: selectedStage!,
-        academicProgram,
-        currentMembers: 1,
-        maxMembers,
-        skillsWanted: [...skillsWanted],
-        tags: [...selectedTags],
-        leaderId,
-      });
-      const created = await createProject(project);
-      // `offAndToNamed` de Flutter: reemplaza la pila hasta la raiz.
+      const created = await createProject(
+        newProject({
+          title: title.trim(),
+          problem: problem.trim(),
+          description: description.trim(),
+          stage: selectedStage,
+          academicProgram: profile.academicProgram,
+          currentMembers: 1,
+          maxMembers,
+          skillsWanted: [...skillsWanted],
+          tags: [...selectedTags],
+          leaderId: profile.id,
+        }),
+      );
+      // `Get.offAndToNamed` de Flutter: la idea publicada reemplaza al formulario.
       navigation.replace("IdeaPublished", { project: created });
     } catch (e) {
-      snackbar(errorMessage(e));
+      // Se queda en el formulario, con lo escrito, para poder reintentar.
+      notify(errorMessage(e));
     } finally {
       setPublishing(false);
     }
   }
 
-  function SelectableChip({
-    label,
-    selected,
-    selectedColor,
-    onPress,
-    testID,
-  }: {
-    label: string;
-    selected: boolean;
-    selectedColor: string;
-    onPress: () => void;
-    testID?: string;
-  }) {
-    return (
-      <TouchableOpacity testID={testID} onPress={onPress} accessibilityRole="checkbox">
-        <Pill label={label} background={selected ? selectedColor : AppColors.card} />
-      </TouchableOpacity>
-    );
-  }
-
-  function ChipGroup({
-    label,
-    children,
-  }: {
-    label: string;
-    children: React.ReactNode;
-  }) {
-    return (
-      <View style={styles.chipGroup}>
-        <Text style={styles.chipGroupLabel}>{label}</Text>
-        <View style={styles.chips}>{children}</View>
-      </View>
-    );
-  }
-
   return (
     <View testID={CreateIdeaScreen.key} style={styles.root}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        {/* Cabecera de progreso */}
-        <PaperCard>
+        <PaperCard margin={styles.noMargin} padding={AppTokens.gapM}>
           <View style={styles.progressRow}>
             <Text style={styles.progressText}>
-              {camposCompletos} de {TOTAL_REQUERIDOS} campos obligatorios
+              {completed} de {REQUIRED_FIELDS} campos obligatorios
             </Text>
             <View style={styles.progressRing}>
               <Text style={styles.progressFraction}>
-                {camposCompletos}/{TOTAL_REQUERIDOS}
+                {completed}/{REQUIRED_FIELDS}
               </Text>
             </View>
           </View>
         </PaperCard>
 
-        <View style={styles.gap} />
+        <Text style={[styles.sectionHeader, styles.sectionGap]}>01 · Lo esencial</Text>
+        <View style={styles.fields}>
+          <TextField
+            testID={CreateIdeaScreen.titleFieldKey}
+            label="Título del proyecto"
+            placeholder="Ej: App de movilidad sostenible para el campus"
+            value={title}
+            onChangeText={setTitle}
+          />
+          <TextField
+            testID={CreateIdeaScreen.problemFieldKey}
+            label="Problema a resolver"
+            placeholder="¿Qué situación quieres mejorar o resolver?"
+            value={problem}
+            onChangeText={setProblem}
+            multiline
+            numberOfLines={3}
+          />
+          <TextField
+            testID={CreateIdeaScreen.descriptionFieldKey}
+            label="Descripción"
+            placeholder="Cuenta cómo funcionaría y qué ya tienes hecho."
+            value={description}
+            onChangeText={setDescription}
+            multiline
+            numberOfLines={4}
+          />
+        </View>
 
-        {/* Sección 01: Lo esencial */}
-        <Text style={styles.sectionHeader}>01 · Lo esencial</Text>
-        <View style={styles.gapM} />
-        <TextField
-          testID="TextFormFieldIdeaTitle"
-          label="Título del proyecto"
-          placeholder="Ej: App de movilidad sostenible para el campus"
-          value={title}
-          onChangeText={setTitle}
-        />
-        <View style={styles.gapM} />
-        <TextField
-          testID="TextFormFieldIdeaProblem"
-          label="Problema a resolver"
-          placeholder="¿Qué situación quieres mejorar o resolver?"
-          value={problem}
-          onChangeText={setProblem}
-          multiline
-          numberOfLines={3}
-        />
-        <View style={styles.gapM} />
-        <TextField
-          testID="TextFormFieldIdeaDescription"
-          label="Descripción"
-          placeholder="Cuenta cómo funcionaría y qué ya tienes hecho."
-          value={description}
-          onChangeText={setDescription}
-          multiline
-          numberOfLines={4}
-        />
-
-        <View style={styles.gap} />
-
-        {/* Sección 02: El equipo que buscas */}
-        <Text style={styles.sectionHeader}>02 · El equipo que buscas</Text>
-        <View style={styles.gapM} />
-
+        <Text style={[styles.sectionHeader, styles.sectionGap]}>02 · El equipo que buscas</Text>
         <ChipGroup label="Habilidades requeridas">
           {skillsCatalog.map((skill) => (
             <SelectableChip
@@ -196,34 +145,38 @@ export default function CreateIdeaScreen() {
               label={skill}
               selected={skillsWanted.includes(skill)}
               selectedColor={AppColors.persimmon}
-              onPress={() => toggleSkill(skill)}
+              onPress={() => toggle(setSkillsWanted, skill)}
             />
           ))}
         </ChipGroup>
 
-        <View style={styles.gapL} />
-
-        {/* Stepper de personas */}
-        <View style={styles.stepperRow} testID="FieldIdeaMaxMembers">
-          <Text style={styles.chipGroupLabel}>Personas en el equipo</Text>
-          <View style={styles.stepper}>
-            <TouchableOpacity
-              onPress={() => setMaxMembers((m) => Math.max(2, m - 1))}
-              disabled={maxMembers <= 2}
-              style={styles.stepBtn}
+        <View style={styles.stepperRow}>
+          <Text style={styles.label}>Personas en el equipo</Text>
+          <View testID={CreateIdeaScreen.maxMembersFieldKey} style={styles.stepper}>
+            <Pressable
+              testID={`${CreateIdeaScreen.maxMembersFieldKey}-remove`}
+              accessibilityRole="button"
+              accessibilityLabel="Menos personas"
+              disabled={maxMembers <= MIN_MEMBERS}
+              onPress={() => setMaxMembers((m) => m - 1)}
+              style={styles.stepButton}
             >
-              <Text style={[styles.stepBtnText, maxMembers <= 2 && styles.stepBtnDisabled]}>−</Text>
-            </TouchableOpacity>
+              <MaterialIcons name="remove" size={AppTokens.iconSize} color={maxMembers <= MIN_MEMBERS ? AppColors.disabledText : AppColors.ink} />
+            </Pressable>
             <Text style={styles.stepperValue}>{maxMembers}</Text>
-            <TouchableOpacity onPress={() => setMaxMembers((m) => m + 1)} style={styles.stepBtn}>
-              <Text style={styles.stepBtnText}>+</Text>
-            </TouchableOpacity>
+            <Pressable
+              testID={`${CreateIdeaScreen.maxMembersFieldKey}-add`}
+              accessibilityRole="button"
+              accessibilityLabel="Más personas"
+              onPress={() => setMaxMembers((m) => m + 1)}
+              style={styles.stepButton}
+            >
+              <MaterialIcons name="add" size={AppTokens.iconSize} color={AppColors.ink} />
+            </Pressable>
           </View>
         </View>
 
-        <View style={styles.gapL} />
-
-        {/* Etapa actual */}
+        {/* Seleccion unica: tocar otra reemplaza la marcada. */}
         <ChipGroup label="Etapa actual">
           {PROJECT_STAGES.map((stage) => (
             <SelectableChip
@@ -237,12 +190,7 @@ export default function CreateIdeaScreen() {
           ))}
         </ChipGroup>
 
-        <View style={styles.gap} />
-
-        {/* Sección 03: Dale contexto (opcional) */}
-        <Text style={styles.sectionHeader}>03 · Dale contexto · opcional</Text>
-        <View style={styles.gapM} />
-
+        <Text style={[styles.sectionHeader, styles.sectionGap]}>03 · Dale contexto · opcional</Text>
         <ChipGroup label="Tags del proyecto">
           {tagsCatalog.map((tag) => (
             <SelectableChip
@@ -251,68 +199,97 @@ export default function CreateIdeaScreen() {
               label={tag}
               selected={selectedTags.includes(tag)}
               selectedColor={AppColors.petrol}
-              onPress={() => toggleTag(tag)}
+              onPress={() => toggle(setSelectedTags, tag)}
             />
           ))}
         </ChipGroup>
 
-        <View style={styles.gap} />
+        {/* Las imagenes todavia no se suben, como en Flutter. */}
+        <View style={styles.dropzone}>
+          <MaterialIcons name="cloud-upload" size={AppTokens.emptyIconSize} color={AppColors.secondary} />
+          <Text style={styles.dropzoneText}>Arrastra imágenes o toca para subir</Text>
+        </View>
 
-        {/* Botones */}
         <View style={styles.buttonRow}>
-          <View style={styles.buttonHalf}>
-            <SecondaryButton label="Guardar borrador" />
+          <View style={styles.flex}>
+            {/* Como en Flutter, todavia no guarda nada. */}
+            <SecondaryButton label="Guardar borrador" onPress={() => {}} />
           </View>
-          <View style={styles.buttonHalf}>
+          <View style={styles.flex}>
             <PrimaryButton
-              testID="ButtonIdeaPublish"
+              testID={CreateIdeaScreen.publishButtonKey}
               label={publishing ? "Publicando..." : "Publicar"}
-              onPress={handlePublish}
-              disabled={!canPublish}
-              loading={publishing}
+              onPress={canPublish && !publishing ? publish : undefined}
             />
           </View>
         </View>
-
-        <View style={styles.gap} />
       </ScrollView>
     </View>
   );
 }
 
+// Pildora que se marca al tocarla: el `_selectableChip` de Flutter.
+function SelectableChip({
+  label,
+  selected,
+  selectedColor,
+  onPress,
+  testID,
+}: {
+  label: string;
+  selected: boolean;
+  selectedColor: string;
+  onPress: () => void;
+  testID?: string;
+}) {
+  return (
+    <Pressable testID={testID} onPress={onPress} accessibilityRole="checkbox" accessibilityState={{ checked: selected }}>
+      <Pill label={label} background={selected ? selectedColor : AppColors.card} />
+    </Pressable>
+  );
+}
+
+function ChipGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <View style={styles.chipGroup}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.chips}>{children}</View>
+    </View>
+  );
+}
+
+// Las `Key` de Flutter.
 CreateIdeaScreen.key = "CreateIdeaPage";
+CreateIdeaScreen.titleFieldKey = "TextFormFieldIdeaTitle";
+CreateIdeaScreen.problemFieldKey = "TextFormFieldIdeaProblem";
+CreateIdeaScreen.descriptionFieldKey = "TextFormFieldIdeaDescription";
+CreateIdeaScreen.maxMembersFieldKey = "FieldIdeaMaxMembers";
+CreateIdeaScreen.publishButtonKey = "ButtonIdeaPublish";
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: AppColors.paper },
+  flex: { flex: 1 },
   scroll: { padding: AppTokens.gapXl },
-  gap: { height: AppTokens.gapXl },
-  gapM: { height: AppTokens.gapM },
-  gapL: { height: AppTokens.gapL },
-  sectionHeader: { ...AppTypography.titleMedium, fontFamily: "Archivo_700Bold" },
-  progressRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
+  noMargin: { margin: 0, marginRight: AppTokens.shadowOffset, marginBottom: AppTokens.shadowOffset },
+  progressRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: AppTokens.gapM },
   progressText: { ...AppTypography.titleMedium, flex: 1 },
   progressRing: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 3,
+    width: AppTokens.typeTileSize,
+    height: AppTokens.typeTileSize,
+    borderRadius: AppTokens.pillRadius,
+    borderWidth: AppTokens.navIndicatorHeight,
     borderColor: AppColors.persimmon,
     alignItems: "center",
     justifyContent: "center",
   },
   progressFraction: { ...AppTypography.bodySmall, color: AppColors.persimmon },
-  chipGroup: { marginBottom: AppTokens.gapS },
-  chipGroupLabel: { ...AppTypography.bodyLarge, marginBottom: AppTokens.gapS },
+  sectionHeader: { ...AppTypography.titleMedium, marginBottom: AppTokens.gapM },
+  sectionGap: { marginTop: AppTokens.gapXl },
+  fields: { gap: AppTokens.gapM },
+  chipGroup: { marginBottom: AppTokens.gapL },
+  label: { ...AppTypography.bodyLarge, marginBottom: AppTokens.gapS },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: AppTokens.gapS },
-  stepperRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
+  stepperRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: AppTokens.gapL },
   stepper: {
     flexDirection: "row",
     alignItems: "center",
@@ -320,12 +297,19 @@ const styles = StyleSheet.create({
     borderWidth: AppTokens.borderWidth,
     borderRadius: AppTokens.radius,
     backgroundColor: AppColors.card,
-    overflow: "hidden",
   },
-  stepBtn: { padding: AppTokens.gapM },
-  stepBtnText: { ...AppTypography.titleMedium, color: AppColors.ink },
-  stepBtnDisabled: { color: AppColors.secondary },
-  stepperValue: { ...AppTypography.titleMedium, paddingHorizontal: AppTokens.gapM },
+  stepButton: { padding: AppTokens.gapS },
+  stepperValue: { ...AppTypography.titleMedium },
+  dropzone: {
+    alignItems: "center",
+    gap: AppTokens.gapS,
+    padding: AppTokens.gapXl,
+    backgroundColor: AppColors.card,
+    borderColor: AppColors.ink,
+    borderWidth: AppTokens.borderWidth,
+    borderRadius: AppTokens.radius,
+    marginBottom: AppTokens.gapXl * 2,
+  },
+  dropzoneText: { ...AppTypography.bodyMedium, color: AppColors.secondary, textAlign: "center" },
   buttonRow: { flexDirection: "row", gap: AppTokens.gapM },
-  buttonHalf: { flex: 1 },
 });

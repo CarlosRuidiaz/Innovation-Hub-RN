@@ -1,5 +1,4 @@
-import { fireEvent, waitFor } from "@testing-library/react-native";
-import React from "react";
+import { waitFor } from "@testing-library/react-native";
 
 import { DummyData } from "@/src/core/data/dummyData";
 import { createLocalContainer } from "@/src/core/di/localContainer";

@@ -1,3 +1,4 @@
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -25,8 +26,8 @@ export default function IdeaPublishedScreen() {
       contentContainerStyle={styles.scroll}
     >
       {/* Icono de exito */}
-      <View style={styles.iconWrapper}>
-        <Text style={styles.checkIcon}>✓</Text>
+      <View style={styles.icon}>
+        <MaterialIcons name="check-circle-outline" size={AppTokens.emptyIconSize * 2} color={AppColors.petrol} />
       </View>
 
       <Text style={styles.headline}>Tu idea ya está en la cartelera</Text>
@@ -80,23 +81,9 @@ const styles = StyleSheet.create({
     padding: AppTokens.gapXl,
     alignItems: "stretch",
   },
-  iconWrapper: {
-    alignSelf: "center",
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: AppColors.petrol,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: AppTokens.gapL,
-  },
-  checkIcon: { color: AppColors.white, fontSize: 40, lineHeight: 44 },
-  headline: {
-    ...AppTypography.headlineMedium,
-    textAlign: "center",
-    fontFamily: "Fraunces_700Bold",
-  },
-  projectTitle: { ...AppTypography.titleLarge, fontFamily: "Fraunces_700Bold" },
+  icon: { alignSelf: "center", marginBottom: AppTokens.gapL },
+  headline: { ...AppTypography.headlineMedium, textAlign: "center" },
+  projectTitle: { ...AppTypography.titleLarge },
   meta: { ...AppTypography.bodyMedium, color: AppColors.secondary },
   pills: { flexDirection: "row", flexWrap: "wrap", gap: AppTokens.gapXs },
   gapXl: { height: AppTokens.gapXl },

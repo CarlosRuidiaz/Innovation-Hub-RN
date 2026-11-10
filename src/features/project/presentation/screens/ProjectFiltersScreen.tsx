@@ -15,6 +15,7 @@ import { useProjects } from "@/src/features/project/presentation/context/Project
 import { stageLabelOf, stageColorOf } from "@/src/core/components/StageChip";
 import { AppColors, AppTokens, AppTypography } from "@/src/theme/tokens";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // La pantalla de filtros de la cartelera: tres grupos de seleccion multiple.
 // Reemplaza a `project_filters_page.dart`.
@@ -24,6 +25,7 @@ import { useNavigation } from "@react-navigation/native";
 export default function ProjectFiltersScreen() {
   const { skillFilters, programFilters, stageFilters, tagFilters, applyFilters } = useProjects();
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   // Copias locales: si se editaran en sitio, el boton de volver no podria
   // deshacer nada.
@@ -55,43 +57,6 @@ export default function ProjectFiltersScreen() {
       tags: localTags,
     });
     navigation.goBack();
-  }
-
-  function FilterPill({
-    label,
-    selected,
-    selectedColor,
-    onPress,
-    testID,
-  }: {
-    label: string;
-    selected: boolean;
-    selectedColor: string;
-    onPress: () => void;
-    testID?: string;
-  }) {
-    return (
-      <TouchableOpacity testID={testID} onPress={onPress} accessibilityRole="checkbox">
-        <Pill label={label} background={selected ? selectedColor : AppColors.card} />
-      </TouchableOpacity>
-    );
-  }
-
-  function FilterGroup({
-    testID,
-    title,
-    children,
-  }: {
-    testID: string;
-    title: string;
-    children: React.ReactNode;
-  }) {
-    return (
-      <View testID={testID} style={styles.group}>
-        <Text style={styles.groupTitle}>{title}</Text>
-        <View style={styles.chips}>{children}</View>
-      </View>
-    );
   }
 
   return (
@@ -147,9 +112,9 @@ export default function ProjectFiltersScreen() {
       </ScrollView>
 
       {/* Pie con el boton "Aplicar" */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: AppTokens.gapL + insets.bottom }]}>
         <PrimaryButton
-          testID="ButtonApplyFilters"
+          testID={ProjectFiltersScreen.applyButtonKey}
           label={
             seleccionados === 0
               ? "Aplicar filtros"
@@ -158,6 +123,48 @@ export default function ProjectFiltersScreen() {
           onPress={handleApply}
         />
       </View>
+    </View>
+  );
+}
+
+ProjectFiltersScreen.applyButtonKey = "ButtonApplyFilters";
+
+// Pildora pulsable: marcada se pinta con su color; sin marcar, papel de tarjeta.
+function FilterPill({
+  label,
+  selected,
+  selectedColor,
+  onPress,
+  testID,
+}: {
+  label: string;
+  selected: boolean;
+  selectedColor: string;
+  onPress: () => void;
+  testID?: string;
+}) {
+  return (
+    <TouchableOpacity testID={testID} onPress={onPress} accessibilityRole="checkbox">
+      <Pill label={label} background={selected ? selectedColor : AppColors.card} />
+    </TouchableOpacity>
+  );
+}
+
+// Un grupo con su titulo. La clave lo identifica: la etapa `research` se dice
+// "Investigación", que es tambien una habilidad del catalogo.
+function FilterGroup({
+  testID,
+  title,
+  children,
+}: {
+  testID: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <View testID={testID} style={styles.group}>
+      <Text style={styles.groupTitle}>{title}</Text>
+      <View style={styles.chips}>{children}</View>
     </View>
   );
 }

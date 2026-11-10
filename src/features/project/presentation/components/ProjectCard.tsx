@@ -2,13 +2,13 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { PaperCard } from "@/src/core/components/PaperCard";
-import { Pill } from "@/src/core/components/Pill";
 import { StageChip } from "@/src/core/components/StageChip";
 import { acceptsApplications, isFull, Project } from "@/src/features/project/domain/entities/Project";
-import { AppColors, AppTokens, AppTypography } from "@/src/theme/tokens";
+import { AppColors, AppFonts, AppTokens, AppTypography } from "@/src/theme/tokens";
 
 // Tarjeta de un proyecto en la cartelera. Reemplaza a `project_card.dart`.
 // La llave de cada instancia es `ProjectCard-${project.id}`, como en Flutter.
+// Como en Flutter, la tarjeta no muestra los tags: salen en el detalle.
 type Props = {
   project: Project;
   onPress?: () => void;
@@ -28,7 +28,7 @@ export function ProjectCard({ project, onPress, testID }: Props) {
       <Text style={styles.meta}>
         {project.academicProgram} · {project.currentMembers} de {project.maxMembers} miembros
       </Text>
-      <View style={styles.bottom}>
+      <View>
         {accepts ? (
           project.skillsWanted.length > 0 ? (
             <Text style={styles.skills}>Busca: {project.skillsWanted.join(" · ")}</Text>
@@ -41,13 +41,6 @@ export function ProjectCard({ project, onPress, testID }: Props) {
           </Text>
         )}
       </View>
-      {project.tags.length > 0 ? (
-        <View style={styles.tags}>
-          {project.tags.map((tag) => (
-            <Pill key={tag} label={tag} />
-          ))}
-        </View>
-      ) : null}
     </PaperCard>
   );
 }
@@ -55,9 +48,9 @@ export function ProjectCard({ project, onPress, testID }: Props) {
 const styles = StyleSheet.create({
   title: { ...AppTypography.titleMedium, marginBottom: AppTokens.gapS },
   chipRow: { flexDirection: "row", marginBottom: AppTokens.gapS },
-  meta: { ...AppTypography.bodyMedium, marginBottom: AppTokens.gapXs },
-  bottom: { marginTop: 2 },
+  meta: { ...AppTypography.bodyMedium, marginBottom: AppTokens.gapS },
   skills: { ...AppTypography.bodySmall },
-  closed: { color: AppColors.persimmon, fontFamily: "Archivo_600SemiBold" },
-  tags: { flexDirection: "row", flexWrap: "wrap", gap: AppTokens.gapXs, marginTop: AppTokens.gapS },
+  closed: { color: AppColors.persimmon, fontFamily: AppFonts.bodySemiBold },
 });
+
+ProjectCard.keyFor = (project: Project) => `ProjectCard-${project.id}`;

@@ -1,4 +1,4 @@
-import { renderHook, waitFor, act } from "@testing-library/react-native";
+import { renderHook, act } from "@testing-library/react-native";
 import React from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -12,20 +12,6 @@ import { FollowsProvider, useFollows } from "@/src/features/follow/presentation/
 import { safeAreaMetrics } from "@/__tests__/support/renderScreen";
 
 // Equivale a `follow_controller_test.dart`.
-function wrapper({ children }: { children: React.ReactNode }) {
-  const data = new DummyData({ latencyMs: 0 });
-  const container = createLocalContainer(data);
-  return (
-    <DIProvider container={container}>
-      <SnackbarProvider>
-        <SessionProvider>
-            <ProfileProvider>{children}</ProfileProvider>
-          </SessionProvider>
-      </SnackbarProvider>
-    </DIProvider>
-  );
-}
-
 function wrapWithFollows({ children }: { children: React.ReactNode }) {
   const data = new DummyData({ latencyMs: 0 });
   const container = createLocalContainer(data);
