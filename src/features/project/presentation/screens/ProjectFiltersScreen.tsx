@@ -9,21 +9,23 @@ import {
 
 import { Pill } from "@/src/core/components/Pill";
 import { PrimaryButton } from "@/src/core/components/Buttons";
-import { academicPrograms, skills, tags } from "@/src/core/catalogs";
+import { academicPrograms, InnovationTypeKey, innovationTypes, skills, tags } from "@/src/core/catalogs";
 import { PROJECT_STAGES, ProjectStage } from "@/src/features/project/domain/entities/ProjectStage";
+import { InnovationTypeChip } from "@/src/features/project/presentation/components/InnovationTypeChip";
 import { useProjects } from "@/src/features/project/presentation/context/ProjectsContext";
 import { stageLabelOf, stageColorOf } from "@/src/core/components/StageChip";
 import { AppColors, AppTokens, AppTypography } from "@/src/theme/tokens";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// La pantalla de filtros de la cartelera: tres grupos de seleccion multiple.
+// La pantalla de filtros de la cartelera: grupos de seleccion multiple. Con
+// Kora, el tipo de innovacion va de primero y "Reclutamiento" de ultimo.
 // Reemplaza a `project_filters_page.dart`.
 //
 // Trabaja sobre copias locales de la seleccion y solo la vuelca al contexto
 // al pulsar "Aplicar": salir con atras deja los filtros como estaban.
 export default function ProjectFiltersScreen() {
-  const { skillFilters, programFilters, stageFilters, tagFilters, applyFilters } = useProjects();
+  const { skillFilters, programFilters, stageFilters, tagFilters, typeFilters, recruitingOnly, applyFilters } = useProjects();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
@@ -33,6 +35,8 @@ export default function ProjectFiltersScreen() {
   const [localPrograms, setLocalPrograms] = useState<string[]>([...programFilters]);
   const [localStages, setLocalStages] = useState<ProjectStage[]>([...stageFilters]);
   const [localTags, setLocalTags] = useState<string[]>([...tagFilters]);
+  const [localTypes, setLocalTypes] = useState<InnovationTypeKey[]>([...typeFilters]);
+  const [localRecruiting, setLocalRecruiting] = useState(recruitingOnly);
 
   function toggleItem<T>(list: T[], setList: (l: T[]) => void, value: T) {
     if (list.includes(value)) {
@@ -47,7 +51,9 @@ export default function ProjectFiltersScreen() {
     (localSkills.length > 0 ? 1 : 0) +
     (localPrograms.length > 0 ? 1 : 0) +
     (localStages.length > 0 ? 1 : 0) +
-    (localTags.length > 0 ? 1 : 0);
+    (localTags.length > 0 ? 1 : 0) +
+    (localTypes.length > 0 ? 1 : 0) +
+    (localRecruiting ? 1 : 0);
 
   function handleApply() {
     applyFilters({
@@ -55,6 +61,8 @@ export default function ProjectFiltersScreen() {
       programs: localPrograms,
       stages: localStages,
       tags: localTags,
+      types: localTypes,
+      recruiting: localRecruiting,
     });
     navigation.goBack();
   }
@@ -62,6 +70,18 @@ export default function ProjectFiltersScreen() {
   return (
     <View style={styles.root}>
       <ScrollView contentContainerStyle={styles.scroll}>
+        <FilterGroup testID="grupo-tipos" title="Tipo de innovación">
+          {innovationTypes.map((t) => (
+            <InnovationTypeChip
+              key={t.key}
+              testID={InnovationTypeChip.keyFor("FiltroTipo", t.key)}
+              type={t.key}
+              selected={localTypes.includes(t.key)}
+              onPress={() => toggleItem(localTypes, setLocalTypes, t.key)}
+            />
+          ))}
+        </FilterGroup>
+
         <FilterGroup testID="grupo-habilidades" title="Habilidades">
           {skills.map((skill) => (
             <FilterPill
@@ -109,6 +129,16 @@ export default function ProjectFiltersScreen() {
             />
           ))}
         </FilterGroup>
+
+        <FilterGroup testID="grupo-reclutamiento" title="Reclutamiento">
+          <FilterPill
+            testID={ProjectFiltersScreen.recruitingKey}
+            label="Buscan equipo"
+            selected={localRecruiting}
+            selectedColor={AppColors.persimmon}
+            onPress={() => setLocalRecruiting((v) => !v)}
+          />
+        </FilterGroup>
       </ScrollView>
 
       {/* Pie con el boton "Aplicar" */}
@@ -128,6 +158,7 @@ export default function ProjectFiltersScreen() {
 }
 
 ProjectFiltersScreen.applyButtonKey = "ButtonApplyFilters";
+ProjectFiltersScreen.recruitingKey = "FiltroBuscanEquipo";
 
 // Pildora pulsable: marcada se pinta con su color; sin marcar, papel de tarjeta.
 function FilterPill({

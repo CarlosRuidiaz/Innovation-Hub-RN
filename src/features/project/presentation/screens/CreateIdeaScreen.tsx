@@ -9,17 +9,19 @@ import { PaperCard } from "@/src/core/components/PaperCard";
 import { Pill } from "@/src/core/components/Pill";
 import { stageColorOf, stageLabelOf } from "@/src/core/components/StageChip";
 import { TextField } from "@/src/core/components/TextField";
-import { skills as skillsCatalog, tags as tagsCatalog } from "@/src/core/catalogs";
+import { InnovationTypeKey, innovationTypes, skills as skillsCatalog, tags as tagsCatalog } from "@/src/core/catalogs";
 import { useSnackbar } from "@/src/core/feedback/SnackbarProvider";
 import { errorMessage } from "@/src/core/roble/errorMessage";
 import { useProfile } from "@/src/features/profile/presentation/context/ProfileContext";
 import { newProject } from "@/src/features/project/domain/entities/Project";
 import { PROJECT_STAGES, ProjectStage } from "@/src/features/project/domain/entities/ProjectStage";
+import { InnovationTypeChip } from "@/src/features/project/presentation/components/InnovationTypeChip";
 import { useProjects } from "@/src/features/project/presentation/context/ProjectsContext";
 import { RootStackParamList } from "@/src/navigation/types";
 import { AppColors, AppTokens, AppTypography } from "@/src/theme/tokens";
 
-const REQUIRED_FIELDS = 6;
+// Seis de Flutter y, con Kora, el tipo de innovacion.
+const REQUIRED_FIELDS = 7;
 // El lider ya es uno: el equipo minimo es de dos.
 const MIN_MEMBERS = 2;
 
@@ -33,6 +35,7 @@ export default function CreateIdeaScreen() {
   const snackbar = useSnackbar();
 
   const [title, setTitle] = useState("");
+  const [innovationType, setInnovationType] = useState<InnovationTypeKey | null>(null);
   const [problem, setProblem] = useState("");
   const [description, setDescription] = useState("");
   const [selectedStage, setSelectedStage] = useState<ProjectStage | null>(null);
@@ -45,6 +48,7 @@ export default function CreateIdeaScreen() {
 
   const completed =
     (title.trim() ? 1 : 0) +
+    (innovationType != null ? 1 : 0) +
     (problem.trim() ? 1 : 0) +
     (description.trim() ? 1 : 0) +
     (selectedStage != null ? 1 : 0) +
@@ -60,7 +64,7 @@ export default function CreateIdeaScreen() {
   const notify = (message: string) => snackbar(message, { title: "Publicar idea" });
 
   async function publish() {
-    if (!canPublish || publishing || selectedStage == null) return;
+    if (!canPublish || publishing || selectedStage == null || innovationType == null) return;
     if (!profile?.id) {
       notify("No encontramos tu perfil. Vuelve a entrar e inténtalo de nuevo.");
       return;
@@ -79,8 +83,12 @@ export default function CreateIdeaScreen() {
           skillsWanted: [...skillsWanted],
           tags: [...selectedTags],
           leaderId: profile.id,
+          innovationType,
         }),
       );
+      // La idea quedo publicada aunque su tipo no se haya guardado: se avisa y
+      // se sigue.
+      if (created.innovationType == null) notify("La idea se publicó, pero no se guardó su tipo.");
       // `Get.offAndToNamed` de Flutter: la idea publicada reemplaza al formulario.
       navigation.replace("IdeaPublished", { project: created });
     } catch (e) {
@@ -116,6 +124,21 @@ export default function CreateIdeaScreen() {
             value={title}
             onChangeText={setTitle}
           />
+          <View testID={CreateIdeaScreen.typeFieldKey}>
+            <Text style={styles.label}>Tipo de innovación</Text>
+            <Text style={styles.help}>Le da el ícono a la tarjeta de tu idea.</Text>
+            <View style={styles.chips}>
+              {innovationTypes.map((t) => (
+                <InnovationTypeChip
+                  key={t.key}
+                  testID={InnovationTypeChip.keyFor("ChipIdeaType", t.key)}
+                  type={t.key}
+                  selected={innovationType === t.key}
+                  onPress={() => setInnovationType(t.key)}
+                />
+              ))}
+            </View>
+          </View>
           <TextField
             testID={CreateIdeaScreen.problemFieldKey}
             label="Problema a resolver"
@@ -265,6 +288,7 @@ CreateIdeaScreen.problemFieldKey = "TextFormFieldIdeaProblem";
 CreateIdeaScreen.descriptionFieldKey = "TextFormFieldIdeaDescription";
 CreateIdeaScreen.maxMembersFieldKey = "FieldIdeaMaxMembers";
 CreateIdeaScreen.publishButtonKey = "ButtonIdeaPublish";
+CreateIdeaScreen.typeFieldKey = "FieldIdeaInnovationType";
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: AppColors.paper },
@@ -288,6 +312,7 @@ const styles = StyleSheet.create({
   fields: { gap: AppTokens.gapM },
   chipGroup: { marginBottom: AppTokens.gapL },
   label: { ...AppTypography.bodyLarge, marginBottom: AppTokens.gapS },
+  help: { ...AppTypography.bodySmall, marginTop: -AppTokens.gapXs, marginBottom: AppTokens.gapS },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: AppTokens.gapS },
   stepperRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: AppTokens.gapL },
   stepper: {

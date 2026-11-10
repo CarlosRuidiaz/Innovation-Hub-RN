@@ -32,11 +32,18 @@ export class ProjectRepositoryImpl implements ProjectRepository {
 
   // Se escribe la fila de `projects` exactamente como Flutter. El tipo, si lo
   // hay, va despues en su propia tabla.
+  //
+  // Si el tipo no se puede guardar, la idea ya quedo publicada: no se deshace.
+  // Se devuelve sin tipo (`innovationType: null`) y la pantalla lo avisa.
   async createProject(project: Project): Promise<Project> {
     return guardRoble(async () => {
       const created = ProjectMapper.fromRow(await this.source.createProject(ProjectMapper.toNewRow(project)));
       if (project.innovationType == null || created.id == null) return created;
-      await this.source.createProjectType(ProjectTypeMapper.toNewRow(created.id, project.innovationType));
+      try {
+        await this.source.createProjectType(ProjectTypeMapper.toNewRow(created.id, project.innovationType));
+      } catch {
+        return { ...created, innovationType: null };
+      }
       return { ...created, innovationType: project.innovationType };
     }, failure);
   }
