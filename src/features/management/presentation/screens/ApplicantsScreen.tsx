@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   avatarText: {
-    ...AppTypography.bodyBold,
+    fontFamily: AppFonts.bodyBold,
     color: AppColors.ink,
     fontSize: 14,
   },

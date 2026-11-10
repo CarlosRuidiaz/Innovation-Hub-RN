@@ -176,7 +176,7 @@ export default function ApplicationStatusScreen() {
           />
           <SecondaryButton
             label="Salir del proyecto"
-            onPress={() => {}}
+            onPress={() => { }}
           />
         </View>
       ) : null}

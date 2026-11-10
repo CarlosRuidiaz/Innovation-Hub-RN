@@ -122,12 +122,68 @@ export function useMyProjectsViewModel(): MyProjectsViewModel {
   }, [isLogged, myId, projectRepo, appRepo, followRepo, clearData]);
 
   useEffect(() => {
-    if (isLogged && myId) {
-      reload();
-    } else {
-      clearData();
+    let active = true;
+    if (!isLogged || !myId) {
+      Promise.resolve().then(() => {
+        if (active) {
+          setCreatedProjects([]);
+          setParticipatingProjects([]);
+          setFollowingProjects([]);
+          setMyApplications([]);
+          setAllProjects([]);
+          setPendingCounts({});
+          setError("");
+        }
+      });
+      return;
     }
-  }, [isLogged, myId, reload, clearData]);
+
+    const loadData = async () => {
+      try {
+        const projects = await projectRepo.getProjects();
+        if (!active) return;
+        setAllProjects(projects);
+
+        const created = projects.filter((p) => p.leaderId === myId);
+        setCreatedProjects(created);
+
+        const countsList = await Promise.all(
+          created.map(async (p) => {
+            if (!p.id) return { id: "", count: 0 };
+            const apps = await appRepo.getApplicationsFor(p.id);
+            return { id: p.id, count: apps.filter(isPending).length };
+          }),
+        );
+        if (!active) return;
+        const countsMap: Record<string, number> = {};
+        for (const item of countsList) {
+          if (item.id) countsMap[item.id] = item.count;
+        }
+        setPendingCounts(countsMap);
+
+        const myApps = await appRepo.getMyApplications(myId);
+        if (!active) return;
+        setMyApplications(myApps);
+
+        const acceptedProjectIds = new Set(
+          myApps.filter((a) => a.status === "accepted").map((a) => a.projectId),
+        );
+        setParticipatingProjects(projects.filter((p) => p.id != null && acceptedProjectIds.has(p.id)));
+
+        const follows = await followRepo.getFollowsByUser(myId);
+        if (!active) return;
+        const followedIds = new Set(follows.filter((f) => f.active).map((f) => f.projectId));
+        setFollowingProjects(projects.filter((p) => p.id != null && followedIds.has(p.id)));
+      } catch (err) {
+        if (active) setError(String(err));
+      }
+    };
+
+    loadData();
+    return () => {
+      active = false;
+    };
+  }, [isLogged, myId, projectRepo, appRepo, followRepo]);
 
   return {
     isLoading,
@@ -142,3 +198,4 @@ export function useMyProjectsViewModel(): MyProjectsViewModel {
     reload,
   };
 }
+

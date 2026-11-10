@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useInject } from "@/src/core/di/DIProvider";
 import { TOKENS } from "@/src/core/di/tokens";
@@ -26,6 +26,11 @@ export function useManagementViewModel(): ManagementViewModel {
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const projectRef = useRef<Project | null>(null);
+  useEffect(() => {
+    projectRef.current = project;
+  }, [project]);
+
   const pendingCount = applicants.filter(isPending).length;
 
   const getApplicants = useCallback(
@@ -44,8 +49,10 @@ export function useManagementViewModel(): ManagementViewModel {
           applicationRepo.getApplicationsFor(projectId),
           projectRepo.getProjects(),
         ]);
+        const found = projects.find((p) => p.id === projectId) ?? null;
+        projectRef.current = found;
         setApplicants(apps);
-        setProject(projects.find((p) => p.id === projectId) ?? null);
+        setProject(found);
       } finally {
         setIsLoading(false);
       }
@@ -55,15 +62,16 @@ export function useManagementViewModel(): ManagementViewModel {
 
   const decide = useCallback(
     async (applicationId: string, decision: ApplicationStatus) => {
+      const currentProjectId = projectRef.current?.id;
       await applicationRepo.decide(applicationId, decision);
-      if (project?.id) {
+      if (currentProjectId) {
         if (decision === "accepted") {
-          await projectRepo.addMember(project.id);
+          await projectRepo.addMember(currentProjectId);
         }
-        await getApplicants(project.id);
+        await getApplicants(currentProjectId);
       }
     },
-    [applicationRepo, projectRepo, project?.id, getApplicants],
+    [applicationRepo, projectRepo, getApplicants],
   );
 
   const closeRecruitment = useCallback(
@@ -84,3 +92,4 @@ export function useManagementViewModel(): ManagementViewModel {
     closeRecruitment,
   };
 }
+

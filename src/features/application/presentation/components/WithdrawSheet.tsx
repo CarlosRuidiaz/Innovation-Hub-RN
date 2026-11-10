@@ -45,3 +45,4 @@ export function WithdrawSheet({ visible, onDismiss, onConfirm }: Props) {
 
 WithdrawSheet.key = "WithdrawSheet";
 WithdrawSheet.confirmButtonKey = "ButtonWithdrawConfirm";
+

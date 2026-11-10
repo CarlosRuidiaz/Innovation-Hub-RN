@@ -49,8 +49,32 @@ export function useMyApplication(projectId: string): MyApplication {
   }, [repository, userId, projectId]);
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    let active = true;
+    if (!userId) {
+      Promise.resolve().then(() => {
+        if (active) setApplication(null);
+      });
+      return;
+    }
+    repository.getMyApplications(userId).then(
+      (apps) => {
+        if (active) {
+          const found = apps.find(
+            (a) => a.projectId === projectId && LIVE_STATUSES.includes(a.status),
+          );
+          setApplication(found ?? null);
+        }
+      },
+      () => {
+        if (active) {
+          setApplication(null);
+        }
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, [repository, userId, projectId]);
 
   return { application, loading, refresh };
 }

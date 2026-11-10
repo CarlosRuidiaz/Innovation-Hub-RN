@@ -15,7 +15,6 @@ import { PrimaryButton } from "@/src/core/components/Buttons";
 import { PaperCard } from "@/src/core/components/PaperCard";
 import { Pill } from "@/src/core/components/Pill";
 import { TypeTile } from "@/src/core/components/TypeTile";
-import { Application } from "@/src/features/application/domain/entities/Application";
 import { AppColors, AppTokens, AppTypography } from "@/src/theme/tokens";
 import { CompactProjectCard } from "../components/CompactProjectCard";
 import { useMyProjectsViewModel } from "../viewmodels/useMyProjectsViewModel";

@@ -4,7 +4,7 @@ import { useInject } from "@/src/core/di/DIProvider";
 import { TOKENS } from "@/src/core/di/tokens";
 import { Project } from "@/src/features/project/domain/entities/Project";
 import { ProjectRepository } from "@/src/features/project/domain/repositories/ProjectRepository";
-import { Application, isPending } from "../../domain/entities/Application";
+import { Application } from "../../domain/entities/Application";
 import { ApplicationRepository } from "../../domain/repositories/ApplicationRepository";
 
 export type ApplicationViewModel = {
@@ -118,3 +118,4 @@ export function useApplicationViewModel(): ApplicationViewModel {
     getProject,
   };
 }
+

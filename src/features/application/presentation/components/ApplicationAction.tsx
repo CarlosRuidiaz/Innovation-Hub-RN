@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { PrimaryButton } from "@/src/core/components/Buttons";
+import { useSession } from "@/src/features/auth/presentation/context/SessionContext";
 import { useProfile } from "@/src/features/profile/presentation/context/ProfileContext";
 import { acceptsApplicationsFrom, Project } from "@/src/features/project/domain/entities/Project";
 import { AppTokens, AppTypography } from "@/src/theme/tokens";
@@ -26,12 +27,13 @@ import { ApplySheet } from "./ApplySheet";
 // Si no toca ninguna, nada.
 export function ApplicationAction({ project }: { project: Project }) {
   const navigation = useNavigation();
+  const { user } = useSession();
   const { profile } = useProfile();
   const { application, refresh } = useMyApplication(project.id ?? "");
   const { apply } = useApplicationViewModel();
   const [sheetVisible, setSheetVisible] = useState(false);
 
-  const miId = profile?.id ?? null;
+  const miId = profile?.id ?? user?.userId ?? null;
   const esLider = miId != null && project.leaderId === miId;
 
   // El lider no ve postularse ni su estado.
