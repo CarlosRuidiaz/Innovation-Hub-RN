@@ -1,14 +1,33 @@
+import React, { useState } from "react";
+
+import { SecondaryButton } from "@/src/core/components/Buttons";
+import { useFollows } from "@/src/features/follow/presentation/context/FollowsContext";
 import { Project } from "@/src/features/project/domain/entities/Project";
 
-// Reemplaza el boton "Seguir" / "Siguiendo" (`Key('ButtonFollow')`) de
-// `_buildFooterButtons` en `project_detail_page.dart`. Lo pone el pie del
-// detalle del proyecto.
-//
-// Lo completa el carril 1. Solo se muestra con perfil cargado y si quien mira
-// no es el lider; tocarlo sigue o deja de seguir el proyecto con
-// `useFollows()`.
-//
-// Por ahora no muestra nada.
+// El boton "Seguir" / "Siguiendo" del pie del detalle de un proyecto.
+// Reemplaza la parte de `_buildFooterButtons` que toca `FollowController`.
+// Solo se muestra si quien mira no es el lider; ese filtro lo hace el detalle.
 export function FollowButton({ project }: { project: Project }) {
-  return null;
+  const { isFollowing, toggleFollow } = useFollows();
+  const [loading, setLoading] = useState(false);
+  const projectId = project.id ?? "";
+  const following = isFollowing(projectId);
+
+  async function handlePress() {
+    setLoading(true);
+    try {
+      await toggleFollow(projectId, !following);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <SecondaryButton
+      testID="ButtonFollow"
+      label={following ? "Siguiendo" : "Seguir"}
+      onPress={handlePress}
+      loading={loading}
+    />
+  );
 }
