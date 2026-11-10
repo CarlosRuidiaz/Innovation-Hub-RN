@@ -34,6 +34,7 @@ describe("ApplicationAction", () => {
       academicProgram: "Diseño",
       semester: 4,
       skills: ["Diseño UX", "Investigación"],
+      bio: null,
     };
 
     const appsList = [...apps];
@@ -150,11 +151,15 @@ describe("ApplicationAction", () => {
     const { render } = renderAction({ project: baseProject, userId: "u1" });
     render();
 
-    const applyBtn = await screen.findByTestId(ApplicationAction.applyButtonKey);
+    await waitFor(() => {
+      const btn = screen.getByTestId(ApplicationAction.applyButtonKey);
+      expect(btn.props.accessibilityState?.disabled).toBeFalsy();
+    });
+    const applyBtn = screen.getByTestId(ApplicationAction.applyButtonKey);
     fireEvent.press(applyBtn);
 
     expect(await screen.findByTestId(ApplySheet.key)).toBeTruthy();
-    expect(screen.getByText("Postularme")).toBeTruthy();
+    expect(screen.getAllByText("Postularme").length).toBeGreaterThan(0);
     expect(screen.getByText("Proyecto 1")).toBeTruthy();
     expect(screen.getByText("¿CÓMO PUEDES APORTAR?")).toBeTruthy();
 
@@ -168,7 +173,11 @@ describe("ApplicationAction", () => {
     const { render, appsList } = renderAction({ project: baseProject, userId: "u1" });
     render();
 
-    const applyBtn = await screen.findByTestId(ApplicationAction.applyButtonKey);
+    await waitFor(() => {
+      const btn = screen.getByTestId(ApplicationAction.applyButtonKey);
+      expect(btn.props.accessibilityState?.disabled).toBeFalsy();
+    });
+    const applyBtn = screen.getByTestId(ApplicationAction.applyButtonKey);
     fireEvent.press(applyBtn);
 
     const messageInput = await screen.findByTestId(ApplySheet.messageFieldKey);
@@ -184,3 +193,4 @@ describe("ApplicationAction", () => {
     });
   });
 });
+

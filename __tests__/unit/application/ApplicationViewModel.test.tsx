@@ -34,9 +34,14 @@ describe("ApplicationViewModel (application_controller_test.dart)", () => {
     const appsList = [...initialApps];
     const appSource = fake<ApplicationDataSource>({
       readApplications: async (filter) =>
-        appsList.filter((a) =>
-          Object.entries(filter).every(([k, v]) => (a as any)[k === "applicant_id" ? "applicantId" : k] === v),
-        ).map((a) => ({
+        appsList
+          .filter((a) => {
+            if (!filter) return true;
+            if (filter.project_id != null && a.projectId !== filter.project_id) return false;
+            if (filter.applicant_id != null && a.applicantId !== filter.applicant_id) return false;
+            return true;
+          })
+          .map((a) => ({
           _id: a.id,
           project_id: a.projectId,
           applicant_id: a.applicantId,
@@ -140,8 +145,9 @@ describe("ApplicationViewModel (application_controller_test.dart)", () => {
     });
 
     expect(created).not.toBeNull();
-    expect(created?.status).toBe("pending");
-    expect(result.current.vigenteEn("p5")?.id).toBe(created?.id);
+    const appCreated = created as unknown as Application;
+    expect(appCreated.status).toBe("pending");
+    expect(result.current.vigenteEn("p5")?.id).toBe(appCreated.id);
   });
 
   it("una postulacion en left no es vigente y puede volver a postularse", async () => {
@@ -166,8 +172,9 @@ describe("ApplicationViewModel (application_controller_test.dart)", () => {
       created = await result.current.apply(postulacion("p5", "u9"));
     });
 
+    const appCreated = created as unknown as Application;
     // Cambiamos a left
-    const inList = appsList.find((a) => a.id === created?.id);
+    const inList = appsList.find((a) => a.id === appCreated?.id);
     if (inList) inList.status = "left";
 
     await act(async () => {
@@ -182,8 +189,9 @@ describe("ApplicationViewModel (application_controller_test.dart)", () => {
       otra = await result.current.apply(postulacion("p5", "u9"));
     });
 
-    expect(otra?.id).not.toBe(created?.id);
-    expect(otra?.status).toBe("pending");
+    const appOtra = otra as unknown as Application;
+    expect(appOtra.id).not.toBe(appCreated.id);
+    expect(appOtra.status).toBe("pending");
   });
 
   it("un removido lo sabe el viewmodel y no vuelve a postularse", async () => {
@@ -208,7 +216,8 @@ describe("ApplicationViewModel (application_controller_test.dart)", () => {
       created = await result.current.apply(postulacion("p5", "u9"));
     });
 
-    const inList = appsList.find((a) => a.id === created?.id);
+    const appCreated = created as unknown as Application;
+    const inList = appsList.find((a) => a.id === appCreated?.id);
     if (inList) inList.status = "removed";
 
     await act(async () => {
@@ -224,8 +233,9 @@ describe("ApplicationViewModel (application_controller_test.dart)", () => {
       intento = await result.current.apply(postulacion("p5", "u9"));
     });
 
-    expect(intento?.id).toBe(created?.id);
-    expect(intento?.status).toBe("removed");
+    const appIntento = intento as unknown as Application;
+    expect(appIntento.id).toBe(appCreated.id);
+    expect(appIntento.status).toBe("removed");
   });
 
   it("withdraw sin saber de quien es no falla", async () => {
@@ -239,3 +249,4 @@ describe("ApplicationViewModel (application_controller_test.dart)", () => {
     expect(result.current.myApplications).toHaveLength(0);
   });
 });
+

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+import { fireEvent, screen } from "@testing-library/react-native";
 import React from "react";
 
 import { DummyData } from "@/src/core/data/dummyData";
@@ -36,6 +36,7 @@ describe("MyProjectsScreen (my_projects_view_test.dart y Kora 12KB)", () => {
       academicProgram: "Diseño",
       semester: 3,
       skills: [],
+      bio: null,
     };
 
     const projectRepo = fake<ProjectRepository>({
@@ -227,3 +228,4 @@ describe("MyProjectsScreen (my_projects_view_test.dart y Kora 12KB)", () => {
     expect(screen.getByText("Reintentar")).toBeTruthy();
   });
 });
+

@@ -8,7 +8,7 @@ import { TOKENS } from "@/src/core/di/tokens";
 import { Application, newApplication } from "@/src/features/application/domain/entities/Application";
 import { ApplicationRepository } from "@/src/features/application/domain/repositories/ApplicationRepository";
 import { useManagementViewModel } from "@/src/features/management/presentation/viewmodels/useManagementViewModel";
-import { Project, newProject } from "@/src/features/project/domain/entities/Project";
+import { newProject } from "@/src/features/project/domain/entities/Project";
 import { ProjectRepository } from "@/src/features/project/domain/repositories/ProjectRepository";
 import { fake } from "@/__tests__/support/fake";
 
@@ -182,3 +182,4 @@ describe("ManagementViewModel (management_controller_test.dart)", () => {
     expect(result.current.pendingCount).toBe(0);
   });
 });
+

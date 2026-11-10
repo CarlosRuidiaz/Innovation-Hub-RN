@@ -36,6 +36,7 @@ describe("MyProjectsViewModel (my_projects_controller_test.dart y robustez)", ()
       academicProgram: "Test",
       semester: 1,
       skills: [],
+      bio: null,
     };
 
     const projectRepo = fake<ProjectRepository>({
@@ -231,3 +232,4 @@ describe("MyProjectsViewModel (my_projects_controller_test.dart y robustez)", ()
     expect(result.current.vm.isLoading).toBe(false);
   });
 });
+

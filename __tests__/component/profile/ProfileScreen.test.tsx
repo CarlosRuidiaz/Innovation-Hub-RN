@@ -1,10 +1,9 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
-import React from "react";
 
 import { DummyData } from "@/src/core/data/dummyData";
 import { createLocalContainer } from "@/src/core/di/localContainer";
 import { TOKENS } from "@/src/core/di/tokens";
-import { Application, newApplication } from "@/src/features/application/domain/entities/Application";
+import { Application } from "@/src/features/application/domain/entities/Application";
 import { ApplicationRepository } from "@/src/features/application/domain/repositories/ApplicationRepository";
 import { AuthRepository } from "@/src/features/auth/domain/repositories/AuthRepository";
 import { FollowRepository } from "@/src/features/follow/domain/repositories/FollowRepository";
@@ -36,6 +35,7 @@ describe("ProfileScreen (profile_view_test.dart y profile_view_error_test.dart)"
       academicProgram: "Ingeniería",
       semester: 5,
       skills: ["Flutter", "Dart"],
+      bio: null,
     };
 
     let loggedOut = false;
@@ -102,10 +102,10 @@ describe("ProfileScreen (profile_view_test.dart y profile_view_error_test.dart)"
     expect(await screen.findByText("JP")).toBeTruthy();
     expect(screen.getByText("Juan Pérez")).toBeTruthy();
     expect(screen.getByText("Ingeniería · 5.º semestre")).toBeTruthy();
-    expect(screen.getByText("1 proyecto activo")).toBeTruthy();
+    expect(await screen.findByText("1 proyecto activo")).toBeTruthy();
     expect(screen.getByText("Flutter")).toBeTruthy();
     expect(screen.getByText("Dart")).toBeTruthy();
-    expect(screen.getByText("Proyecto 1")).toBeTruthy();
+    expect(await screen.findByText("Proyecto 1")).toBeTruthy();
     expect(screen.getByText("Líder")).toBeTruthy();
     expect(screen.getByText("1 de 3 miembros")).toBeTruthy();
   });
@@ -115,7 +115,7 @@ describe("ProfileScreen (profile_view_test.dart y profile_view_error_test.dart)"
     render();
 
     expect(await screen.findByText("No pudimos cargar tu perfil")).toBeTruthy();
-    expect(screen.getByText("Reintentar")).toBeTruthy();
+    expect(await screen.findByText("Reintentar")).toBeTruthy();
   });
 
   it("cerrar sesion pide confirmacion y cierra sesion", async () => {
@@ -133,3 +133,4 @@ describe("ProfileScreen (profile_view_test.dart y profile_view_error_test.dart)"
     });
   });
 });
+

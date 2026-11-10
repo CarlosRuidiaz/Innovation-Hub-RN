@@ -1,5 +1,4 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
-import React from "react";
 
 import { DummyData } from "@/src/core/data/dummyData";
 import { createLocalContainer } from "@/src/core/di/localContainer";
@@ -33,6 +32,7 @@ describe("ApplicantsScreen (applicants_page_test.dart y Kora 18K)", () => {
       academicProgram: "Ingeniería de Sistemas",
       semester: 8,
       skills: [],
+      bio: null,
     };
 
     const appsList = [...apps];
@@ -177,3 +177,4 @@ describe("ApplicantsScreen (applicants_page_test.dart y Kora 18K)", () => {
     });
   });
 });
+

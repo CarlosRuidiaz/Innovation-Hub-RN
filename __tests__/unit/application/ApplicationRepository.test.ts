@@ -89,8 +89,7 @@ describe("ApplicationRepository con una fuente falsa", () => {
 
   it("si el mensaje falla, la postulacion queda creada con message null", async () => {
     const { repo, created } = sourceWith([]);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (repo as any).source.createApplicationMessage = async () => {
+    repo["source"].createApplicationMessage = async () => {
       throw new Error("fallo de roble");
     };
     const app = await repo.apply({ ...nueva("p1"), message: "Mensaje que fallara" });
