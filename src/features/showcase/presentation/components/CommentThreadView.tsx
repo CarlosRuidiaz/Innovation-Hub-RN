@@ -3,7 +3,6 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AppColors, AppFonts, AppStageColors, AppTokens, AppTypography } from "@/src/theme/tokens";
 import { ProjectComment } from "../../domain/entities/ProjectComment";
-import { ShowcaseSizes } from "./showcaseSizes";
 
 type Props = {
   comment: ProjectComment;
@@ -96,15 +95,15 @@ const styles = StyleSheet.create({
     marginLeft: AppTokens.gapL,
     marginBottom: AppTokens.gapM,
     paddingLeft: AppTokens.gapM,
-    borderLeftWidth: ShowcaseSizes.replyRuleWidth,
+    borderLeftWidth: AppTokens.replyRuleWidth,
     borderLeftColor: AppColors.ink,
   },
   headerRow: { flexDirection: "row", alignItems: "center", gap: AppTokens.gapS },
   avatar: {
-    width: ShowcaseSizes.avatarSize,
-    height: ShowcaseSizes.avatarSize,
-    borderRadius: ShowcaseSizes.avatarSize / 2,
-    borderWidth: ShowcaseSizes.avatarBorder,
+    width: AppTokens.commentAvatarSize,
+    height: AppTokens.commentAvatarSize,
+    borderRadius: AppTokens.commentAvatarSize / 2,
+    borderWidth: AppTokens.commentAvatarBorder,
     borderColor: AppColors.ink,
     alignItems: "center",
     justifyContent: "center",
@@ -113,16 +112,16 @@ const styles = StyleSheet.create({
   author: { flex: 1, alignItems: "flex-start" },
   authorName: { ...AppTypography.bodyMedium, fontFamily: AppFonts.bodyBold },
   badge: {
-    marginTop: ShowcaseSizes.hairGap,
-    paddingHorizontal: ShowcaseSizes.teamBadgePaddingH,
-    paddingVertical: ShowcaseSizes.teamBadgePaddingV,
+    marginTop: AppTokens.hairGap,
+    paddingHorizontal: AppTokens.teamBadgePaddingH,
+    paddingVertical: AppTokens.teamBadgePaddingV,
     backgroundColor: AppColors.ink,
     borderRadius: AppTokens.radius,
   },
   badgeText: {
     fontFamily: AppFonts.bodyBold,
-    fontSize: ShowcaseSizes.teamBadgeFontSize,
-    letterSpacing: ShowcaseSizes.teamBadgeLetterSpacing,
+    fontSize: AppTokens.teamBadgeFontSize,
+    letterSpacing: AppTokens.teamBadgeLetterSpacing,
     color: AppColors.white,
   },
   replyButton: { paddingHorizontal: AppTokens.gapS },

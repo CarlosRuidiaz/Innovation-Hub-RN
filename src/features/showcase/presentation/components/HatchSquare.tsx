@@ -2,13 +2,12 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 
 import { AppColors, AppTokens } from "@/src/theme/tokens";
-import { ShowcaseSizes } from "./showcaseSizes";
 
-const size = ShowcaseSizes.hatchSize;
+const size = AppTokens.hatchSize;
 // Cada raya va de (i, 0) a (i + lado, lado): una diagonal a 45 grados.
 const length = size * Math.SQRT2;
 const offsets: number[] = [];
-for (let i = -size; i < size; i += ShowcaseSizes.hatchSpacing) offsets.push(i);
+for (let i = -size; i < size; i += AppTokens.hatchSpacing) offsets.push(i);
 
 // El cuadro de papel con rayas diagonales de la tarjeta de la vitrina: el
 // `_HatchPatternPainter` de Flutter. Las rayas son vistas giradas y el cuadro
@@ -35,9 +34,9 @@ const styles = StyleSheet.create({
   },
   line: {
     position: "absolute",
-    top: size / 2 - ShowcaseSizes.hatchStroke / 2,
+    top: size / 2 - AppTokens.hatchStroke / 2,
     width: length,
-    height: ShowcaseSizes.hatchStroke,
+    height: AppTokens.hatchStroke,
     backgroundColor: AppColors.hatch,
     transform: [{ rotate: "45deg" }],
   },

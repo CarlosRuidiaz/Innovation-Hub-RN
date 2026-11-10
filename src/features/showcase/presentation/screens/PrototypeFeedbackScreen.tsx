@@ -25,7 +25,6 @@ import { CommentThreadView } from "../components/CommentThreadView";
 import { FeedbackRatingBars } from "../components/FeedbackRatingBars";
 import { FeedbackSheet } from "../components/FeedbackSheet";
 import { ShowcaseBackButton } from "../components/ShowcaseBackButton";
-import { ShowcaseSizes } from "../components/showcaseSizes";
 import { usePrototypeDetailViewModel } from "../viewmodels/usePrototypeDetailViewModel";
 
 type Reply = { commentId: string; authorName: string };
@@ -152,7 +151,7 @@ export default function PrototypeFeedbackScreen() {
               hitSlop={AppTokens.gapS}
               onPress={() => setReplyTo(null)}
             >
-              <MaterialIcons name="close" size={ShowcaseSizes.closeIconSize} color={AppColors.secondary} />
+              <MaterialIcons name="close" size={AppTokens.closeIconSize} color={AppColors.secondary} />
             </Pressable>
           </View>
         ) : null}
@@ -225,7 +224,7 @@ const styles = StyleSheet.create({
     ...AppTypography.labelLarge,
     fontFamily: AppFonts.bodyBold,
     color: AppColors.secondary,
-    letterSpacing: ShowcaseSizes.sectionLetterSpacing,
+    letterSpacing: AppTokens.sectionLetterSpacing,
     marginTop: AppTokens.gapL,
     marginBottom: AppTokens.gapM,
   },

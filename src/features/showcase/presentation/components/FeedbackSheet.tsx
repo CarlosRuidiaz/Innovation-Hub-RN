@@ -8,7 +8,6 @@ import { TextField } from "@/src/core/components/TextField";
 import { AppColors, AppFonts, AppTokens, AppTypography } from "@/src/theme/tokens";
 import { ProjectFeedback } from "../../domain/entities/ProjectFeedback";
 import { FeedbackScores } from "../viewmodels/usePrototypeDetailViewModel";
-import { ShowcaseSizes } from "./showcaseSizes";
 
 type Criterion = "usability" | "innovation" | "visualDesign" | "feasibility";
 
@@ -159,7 +158,7 @@ const styles = StyleSheet.create({
   cells: { flexDirection: "row", gap: AppTokens.gapXs, marginTop: AppTokens.gapS },
   cell: {
     flex: 1,
-    height: ShowcaseSizes.scoreCellHeight,
+    height: AppTokens.scoreCellHeight,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: AppColors.card,

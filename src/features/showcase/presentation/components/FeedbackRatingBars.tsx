@@ -3,7 +3,6 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { AppColors, AppFonts, AppTokens, AppTypography } from "@/src/theme/tokens";
 import { FeedbackSummary, isEmptySummary } from "../../domain/entities/FeedbackSummary";
-import { ShowcaseSizes } from "./showcaseSizes";
 
 // Los cuatro promedios de un prototipo en barras de cinco: `feedback_rating_bars.dart`.
 export function FeedbackRatingBars({ summary }: { summary: FeedbackSummary }) {
@@ -46,14 +45,14 @@ const styles = StyleSheet.create({
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   label: { ...AppTypography.bodyMedium, fontFamily: AppFonts.bodyBold },
   score: AppTypography.bodySmall,
-  bars: { flexDirection: "row", gap: AppTokens.gapXs, marginTop: AppTokens.gapXs + ShowcaseSizes.hairGap },
+  bars: { flexDirection: "row", gap: AppTokens.gapXs, marginTop: AppTokens.gapXs + AppTokens.hairGap },
   bar: {
     flex: 1,
-    height: ShowcaseSizes.ratingBarHeight,
+    height: AppTokens.ratingBarHeight,
     backgroundColor: AppColors.card,
     borderColor: AppColors.ink,
-    borderWidth: ShowcaseSizes.ratingBarBorder,
-    borderRadius: ShowcaseSizes.ratingBarRadius,
+    borderWidth: AppTokens.ratingBarBorder,
+    borderRadius: AppTokens.ratingBarRadius,
   },
   filled: { backgroundColor: AppColors.persimmon },
 });
