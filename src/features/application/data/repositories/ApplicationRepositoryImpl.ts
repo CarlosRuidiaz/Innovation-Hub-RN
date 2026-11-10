@@ -45,8 +45,12 @@ export class ApplicationRepositoryImpl implements ApplicationRepository {
       );
       const message = application.message?.trim();
       if (!message || created.id == null) return created;
-      await this.source.createApplicationMessage(ApplicationMessageMapper.toNewRow(created.id, message));
-      return { ...created, message };
+      try {
+        await this.source.createApplicationMessage(ApplicationMessageMapper.toNewRow(created.id, message));
+        return { ...created, message };
+      } catch {
+        return { ...created, message: null };
+      }
     }, failure);
   }
 

@@ -87,6 +87,17 @@ describe("ApplicationRepository con una fuente falsa", () => {
     expect(app.message).toBe("Me interesa");
   });
 
+  it("si el mensaje falla, la postulacion queda creada con message null", async () => {
+    const { repo, created } = sourceWith([]);
+    repo["source"].createApplicationMessage = async () => {
+      throw new Error("fallo de roble");
+    };
+    const app = await repo.apply({ ...nueva("p1"), message: "Mensaje que fallara" });
+    expect(created).toHaveLength(1);
+    expect(app.id).toBe("nueva_1");
+    expect(app.message).toBeNull();
+  });
+
   it("withdraw, leave y decide actualizan unicamente status", async () => {
     const { repo, updates } = sourceWith([]);
     await repo.withdraw("a1");
