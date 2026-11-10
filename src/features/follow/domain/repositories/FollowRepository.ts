@@ -10,4 +10,8 @@ export interface FollowRepository {
 
   // Sigue o deja de seguir. Reusa la fila si ya existe.
   toggleFollow(userId: string, projectId: string, active: boolean): Promise<Follow>;
+
+  // Kora: cuantos seguidores activos tiene cada proyecto, con una sola lectura
+  // de `follows`. Un proyecto sin seguidores no aparece.
+  countFollowers(): Promise<Record<string, number>>;
 }

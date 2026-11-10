@@ -17,7 +17,10 @@ export type FollowsValue = {
   isLoading: boolean;
   isFollowing: (projectId: string) => boolean;
   toggleFollow: (projectId: string, active: boolean) => Promise<void>;
+  // Recarga los seguidos y los conteos de seguidores.
   reload: () => Promise<void>;
+  // Kora: cuantas personas siguen un proyecto, para las tarjetas.
+  followersOf: (projectId: string | null) => number;
 };
 
 const FollowsContext = createContext<FollowsValue | undefined>(undefined);
@@ -38,8 +41,23 @@ export function FollowsProvider({ children }: { children: React.ReactNode }) {
   const [failedFor, setFailedFor] = useState<string | null>(null);
   const isLoading = reloading || (userId != null && loaded?.userId !== userId && failedFor !== userId);
 
+  // Kora: los seguidores de cada proyecto. Se cargan al abrir la app (al entrar
+  // una cuenta), con `reload`, y se ajustan al seguir o dejar de seguir.
+  const [counts, setCounts] = useState<Record<string, number>>({});
+
   // Solo vale la ultima peticion: una respuesta vieja no pisa la nueva.
   const requestRef = useRef(0);
+  const countsRequestRef = useRef(0);
+
+  const fetchCounts = useCallback(async () => {
+    const request = ++countsRequestRef.current;
+    try {
+      const result = await repo.countFollowers();
+      if (request === countsRequestRef.current) setCounts(result);
+    } catch {
+      // Sin conteos, las tarjetas muestran los que habia.
+    }
+  }, [repo]);
   const fetchFollows = useCallback(
     async (forUser: string) => {
       const request = ++requestRef.current;
@@ -71,17 +89,27 @@ export function FollowsProvider({ children }: { children: React.ReactNode }) {
         if (request === requestRef.current) setFailedFor(userId);
       },
     );
+    // Dentro de la promesa: si falla, aunque sea al llamarla, la app sigue.
+    const countsRequest = ++countsRequestRef.current;
+    Promise.resolve()
+      .then(() => repo.countFollowers())
+      .then(
+        (result) => {
+          if (countsRequest === countsRequestRef.current) setCounts(result);
+        },
+        () => {},
+      );
   }, [userId, repo]);
 
   const loadFollows = useCallback(async () => {
     if (!userId) return;
     setReloading(true);
     try {
-      await fetchFollows(userId);
+      await Promise.all([fetchFollows(userId), fetchCounts()]);
     } finally {
       setReloading(false);
     }
-  }, [fetchFollows, userId]);
+  }, [fetchFollows, fetchCounts, userId]);
 
   const isFollowing = useCallback(
     (projectId: string) => follows.some((f) => f.projectId === projectId),
@@ -94,7 +122,12 @@ export function FollowsProvider({ children }: { children: React.ReactNode }) {
     async (projectId: string, active: boolean) => {
       if (!userId) return;
       try {
+        const was = follows.some((f) => f.projectId === projectId);
         const result = await repo.toggleFollow(userId, projectId, active);
+        // El conteo sube o baja solo si de verdad cambio.
+        if (was !== active) {
+          setCounts((prev) => ({ ...prev, [projectId]: Math.max(0, (prev[projectId] ?? 0) + (active ? 1 : -1)) }));
+        }
         setLoaded((prev) => {
           const current = prev?.userId === userId ? prev.follows : [];
           const index = current.findIndex((f) => f.projectId === projectId);
@@ -107,8 +140,10 @@ export function FollowsProvider({ children }: { children: React.ReactNode }) {
         // Error silencioso: el icono no cambia; el usuario puede reintentar.
       }
     },
-    [repo, userId],
+    [repo, userId, follows],
   );
+
+  const followersOf = useCallback((projectId: string | null) => (projectId ? (counts[projectId] ?? 0) : 0), [counts]);
 
   const value = useMemo<FollowsValue>(
     () => ({
@@ -117,8 +152,9 @@ export function FollowsProvider({ children }: { children: React.ReactNode }) {
       isFollowing,
       toggleFollow,
       reload: loadFollows,
+      followersOf,
     }),
-    [follows, isLoading, isFollowing, toggleFollow, loadFollows],
+    [follows, isLoading, isFollowing, toggleFollow, loadFollows, followersOf],
   );
 
   return <FollowsContext.Provider value={value}>{children}</FollowsContext.Provider>;
