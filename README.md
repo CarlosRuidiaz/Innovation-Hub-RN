@@ -1,107 +1,76 @@
 # Innovation Hub
 
-Aplicación móvil para conectar estudiantes con proyectos universitarios.
+La cartelera de proyectos del Grupo 4 de Programación Móvil (Universidad del Norte), en React Native. Los
+estudiantes publican ideas de proyecto, se postulan, forman equipos y documentan sus avances. El backend y la
+autenticación son de **Roble**.
 
-Quien tiene una idea la publica en una cartelera y dice qué habilidades busca. Quien quiere participar explora las ideas publicadas, encuentra las que encajan con lo que sabe hacer y se postula. El líder del proyecto revisa las postulaciones y arma su equipo.
+Es la migración de la app Flutter del grupo, hecha como `f_market` → `r_market`: sobre el template
+`rn-uninorte-expo-template` del curso y con el paquete `roble-client`.
 
-Proyecto del curso **Programación Móvil**, Universidad del Norte. Grupo 4.
-Hecho en Flutter con GetX, siguiendo una arquitectura limpia pragmática.
+## Correrla
 
-**Prototipo en Figma:** https://www.figma.com/design/WffkIQ3gkDkkGvudgIFaSE/Semana-5-prototipo
-
----
-
-## Qué hace
-
-- **Cartelera de proyectos.** Lista de ideas publicadas, cada una con su etapa, el programa académico, cuántos miembros tiene de los que busca y qué habilidades necesita. Hay una pestaña que filtra por las habilidades del estudiante y otra que muestra todo.
-- **Detalle de un proyecto.** El problema que resuelve, la descripción, el equipo actual y las habilidades que faltan. Desde ahí se postula.
-- **Publicar una idea.** Un formulario en tres pasos: lo esencial, el equipo que se busca y contexto opcional.
-- **Seguimiento de la postulación.** Ver si sigue en revisión o si ya fue aceptada, y cancelarla mientras siga pendiente.
-- **Gestión de postulantes.** Quien lidera un proyecto ve quién se postuló, con su programa, semestre y habilidades, y acepta o rechaza. También puede cerrar el reclutamiento.
-- **Perfil del estudiante**, con su programa, semestre y habilidades.
-
----
-
-## Cómo ejecutarlo
-
-Necesitas el SDK de Flutter instalado. Luego, desde la raíz del proyecto:
+Hace falta Node.js 24 (mínimo 22.13).
 
 ```bash
-flutter pub get
+npm install
+cp .env.example .env        # en Windows: copy .env.example .env
+npm start                   # luego "a" para Android o "w" para el navegador
 ```
 
-La primera ejecución necesita conexión a internet: las tipografías se descargan una vez y quedan en caché.
+Sin `.env` la app no sabe a qué proyecto de Roble conectarse, y lo dice en pantalla.
 
-### En un emulador de Android
-
-Abre el emulador desde Android Studio, en **Device Manager**, y espera a que arranque del todo. Después:
+Para trabajar en la interfaz sin servidor, con los datos en memoria:
 
 ```bash
-flutter devices     # para confirmar que aparece
-flutter run
+npm run start:local
 ```
 
-Si hay un solo dispositivo conectado, `flutter run` lo toma directamente. Si hay varios, `flutter run -d <id>` con el identificador que muestre `flutter devices`.
+Ahí se entra con `carlos.ruidiaz@uninorte.edu.co` y la clave `Clave!2026`. Los datos se pierden al cerrar la
+app.
 
-### En el navegador
+## Pruebas
 
 ```bash
-flutter run -d chrome
+npm run typecheck
+npm run lint
+npm run test:ci             # o test:unit, test:component, test:integration
 ```
 
-Útil para iterar rápido sobre la interfaz, porque recompila en segundos.
+Las pruebas no usan Roble: corren con fuentes falsas o con los datos en memoria. GitHub Actions corre las tres
+en cada push.
 
-### Notas
-
-No hay inicio de sesión todavía: la aplicación entra directo a la cartelera con un perfil de estudiante de ejemplo.
-
-Los datos son locales y de prueba. Lo que publiques o postules se mantiene mientras la aplicación siga abierta y se pierde al cerrarla, porque todavía no hay servidor ni almacenamiento permanente.
-
----
-
-## Arquitectura
-
-La aplicación está organizada por funcionalidad, y cada una se parte en tres capas donde **cada capa solo conoce a la de adentro**:
+## Estructura
 
 ```
-Vista  →  Controlador  →  Repositorio  →  Fuente de datos
-       └─── ui/ ───┘   └─ domain/ ─┘   └──── data/ ────┘
+App.tsx                     proveedores, sesión y navegación
+src/
+  theme/                    "Cartelera": colores, medidas y tipografía (tokens.ts) y el tema de Paper
+  core/
+    components/             piezas que usan varias funcionalidades
+    catalogs.ts             habilidades, tags, programas y tipos de innovación
+    roble/                  cliente, configuración y formato de las filas de Roble
+    di/                     contenedor de dependencias (appContainer y localContainer)
+    data/dummyData.ts       las filas en memoria
+    feedback/               la barra de avisos
+  navigation/               rutas, barra inferior y puerta de sesión
+  features/<funcionalidad>/
+    domain/                 entidades, interfaz del repositorio y su Failure
+    data/                   convertidores de filas, datasources (Roble y memoria) y repositorio
+    presentation/           pantallas, componentes y contextos
+    di.ts                   registra el repositorio con Roble y en memoria
+__tests__/                  unit, component, integration y support
 ```
 
-Entre cada paso hay una interfaz, no una clase concreta. Eso tiene tres consecuencias prácticas:
+Cada ruta importa su pantalla desde la carpeta de su funcionalidad, y cada funcionalidad registra lo suyo en
+su `di.ts`: migrar una pantalla no toca la navegación ni los contenedores.
 
-- Las reglas del negocio no dependen de Flutter ni de dónde vengan los datos.
-- Se puede probar un controlador sin base de datos, sin red y sin pantalla.
-- Cambiar los datos de prueba locales por un servidor real es escribir una clase nueva y cambiar una línea, sin tocar ninguna pantalla.
+## Roble se comparte con la app Flutter
 
-```
-lib/
-├── main.dart          arranque y registro de las dependencias
-├── core/              tema visual, rutas y widgets compartidos
-└── features/
-    └── <nombre>/
-        ├── domain/    entidades y contratos
-        ├── data/      fuentes de datos y repositorios
-        └── ui/        controladores y pantallas
-```
+La app Flutter sigue en uso sobre el mismo proyecto de Roble. Por eso:
 
-Es una versión pragmática de la arquitectura limpia: en lugar de un caso de uso por cada acción, esa lógica vive en el controlador. Reduce la cantidad de archivos sin perder la separación entre capas.
-
-### Identidad visual
-
-El diseño sigue el prototipo de Figma: fondo de papel crema, tarjetas con borde fino y sombra dura sin difuminado, chips en píldora y un color por cada etapa de un proyecto. Los valores están centralizados en un solo archivo, así que el aspecto de toda la aplicación se ajusta desde ahí.
-
----
-
-## Estado actual
-
-Todo el flujo descrito arriba está implementado y funcionando con datos locales de prueba: explorar la cartelera, ver el detalle de un proyecto, publicar una idea, postularse, seguir el estado de la postulación y gestionar los postulantes de un proyecto propio.
-
-El inicio de sesión está construido pero desconectado, a la espera del servidor.
-
-## Qué falta
-
-- Conectar un servidor. Hoy todos los datos son locales y de prueba.
-- Guardar los datos para que sobrevivan al cerrar la aplicación, y que funcione sin conexión.
-- Activar el inicio de sesión.
-- Notificaciones, espacio de trabajo del proyecto y el resto de pantallas del prototipo.
+- Nunca se cambia, renombra ni borra una tabla o una columna que ya existe.
+- Se escribe en cada tabla exactamente como lo hace Flutter: los convertidores de `data/mappers/` producen lo
+  mismo que su `toJsonNoId` (listas como texto JSON, fechas en hora local sin zona) y sus pruebas lo comparan.
+- El perfil del estudiante viaja en el `extra` de la cuenta con los nombres que lee Flutter
+  (`academicProgram`, `semester`, `skills`, `bio`).
+- Lo nuevo va en tablas nuevas: `project_types` y `application_messages`.
