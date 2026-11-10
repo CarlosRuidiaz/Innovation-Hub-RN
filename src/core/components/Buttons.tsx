@@ -28,15 +28,29 @@ export function PrimaryButton(props: Props) {
   return <AppButton {...props} variant="primary" />;
 }
 
-export function SecondaryButton(props: Props) {
-  return <AppButton {...props} variant="secondary" />;
+// `color` cambia el texto y el borde, como el `foregroundColor` y el `side` que
+// le pone Flutter a un `OutlinedButton` ("Salir del proyecto" va en persimmon).
+// Sin ella, tinta.
+export function SecondaryButton({ color, ...props }: Props & { color?: string }) {
+  return <AppButton {...props} variant="secondary" tint={color} />;
 }
 
-function AppButton({ label, onPress, disabled, loading, icon, testID, style, variant }: Props & { variant: "primary" | "secondary" }) {
+function AppButton({
+  label,
+  onPress,
+  disabled,
+  loading,
+  icon,
+  testID,
+  style,
+  variant,
+  tint,
+}: Props & { variant: "primary" | "secondary"; tint?: string }) {
   const off = disabled || loading || !onPress;
   const primary = variant === "primary";
   const background = off && primary ? AppColors.disabledBackground : primary ? AppColors.persimmon : AppColors.card;
-  const color = off ? AppColors.disabledText : primary ? AppColors.white : AppColors.ink;
+  const color = off ? AppColors.disabledText : primary ? AppColors.white : (tint ?? AppColors.ink);
+  const border = !primary && !off && tint ? { borderColor: tint } : null;
 
   return (
     <Pressable
@@ -45,7 +59,7 @@ function AppButton({ label, onPress, disabled, loading, icon, testID, style, var
       accessibilityState={{ disabled: off, busy: loading }}
       disabled={off}
       onPress={onPress}
-      style={[styles.button, { backgroundColor: background }, style]}
+      style={[styles.button, { backgroundColor: background }, border, style]}
     >
       <View style={styles.content}>
         {loading ? <ActivityIndicator size="small" color={color} /> : null}
