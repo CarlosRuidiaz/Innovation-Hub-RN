@@ -33,6 +33,10 @@ export const AppColors = {
   // Kora: el papel al 85 %, para el texto chico sobre el bloque persimmon de la
   // frase de la comunidad.
   paperMuted: "rgba(245, 240, 230, 0.85)",
+  // El blanco al 80 % (el subtitulo del banner de la vitrina) y la tinta al
+  // 15 % (las lineas finas de la gestion de postulantes).
+  whiteMuted: "rgba(255, 255, 255, 0.8)",
+  inkFaint: "rgba(23, 21, 15, 0.15)",
 } as const;
 
 // Colores de las seis etapas de un proyecto. Viven en la UI: la entidad no sabe
@@ -118,6 +122,33 @@ export const AppTokens = {
   statDividerWidth: 1,
   counterIconSize: 14,
   squareButtonSize: 42,
+  // Lineas finas de 1, el espacio de 2 entre lineas de texto, la barra del
+  // mensaje citado, el espaciado de las etiquetas en mayusculas, el alto minimo
+  // de un vacio dentro de una lista y el avatar grande del perfil.
+  hairline: 1,
+  hairGap: 2,
+  quoteBarWidth: 3,
+  labelLetterSpacing: 0.5,
+  emptyMinHeight: 180,
+  avatarSizeLarge: 64,
+  // La vitrina (`showcase_project_card.dart`, `feedback_rating_bars.dart`,
+  // `feedback_bottom_sheet.dart` y `comment_thread_view.dart`).
+  hatchSize: 76,
+  hatchSpacing: 10,
+  hatchStroke: 2,
+  ratingBarHeight: 10,
+  ratingBarBorder: 1.2,
+  ratingBarRadius: 2,
+  scoreCellHeight: 34,
+  commentAvatarSize: 32,
+  commentAvatarBorder: 1.2,
+  replyRuleWidth: 2,
+  teamBadgeFontSize: 9.5,
+  teamBadgeLetterSpacing: 0.5,
+  teamBadgePaddingH: 6,
+  teamBadgePaddingV: 2,
+  closeIconSize: 16,
+  sectionLetterSpacing: 1,
 } as const;
 
 // Las familias cargadas en `App.tsx`. En React Native cada peso es una fuente

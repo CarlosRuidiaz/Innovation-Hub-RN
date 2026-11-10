@@ -12,12 +12,17 @@ type Props = {
   // Si no se pasa, blanco o tinta segun el brillo del fondo, como en Flutter.
   foreground?: string;
   outlined?: boolean;
+  // El color del borde, si va con borde. Por omision, tinta.
+  borderColor?: string;
   testID?: string;
 };
 
-export function Pill({ label, background = AppColors.card, foreground, outlined = true, testID }: Props) {
+export function Pill({ label, background = AppColors.card, foreground, outlined = true, borderColor, testID }: Props) {
   return (
-    <View testID={testID} style={[styles.pill, { backgroundColor: background }, outlined ? styles.outlined : null]}>
+    <View
+      testID={testID}
+      style={[styles.pill, { backgroundColor: background }, outlined ? styles.outlined : null, outlined && borderColor ? { borderColor } : null]}
+    >
       <Text style={[styles.label, { color: foreground ?? textColorOn(background) }]}>{label}</Text>
     </View>
   );
