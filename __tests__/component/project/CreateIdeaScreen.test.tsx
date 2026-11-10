@@ -76,8 +76,8 @@ describe("CreateIdeaScreen", () => {
     });
   });
 
-  it("el contador de progreso empieza en 0 de 6", async () => {
+  it("el contador de progreso empieza en 0 de 7, con el tipo de innovacion", async () => {
     const { getByText } = setup();
-    await waitFor(() => getByText("0 de 6 campos obligatorios"));
+    await waitFor(() => getByText("0 de 7 campos obligatorios"));
   });
 });
