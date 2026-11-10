@@ -3,6 +3,7 @@ import { StyleSheet, View } from "react-native";
 
 import { StageChip, stageColorOf, stageLabelOf } from "@/src/core/components/StageChip";
 import { PROJECT_STAGES, ProjectStage } from "@/src/features/project/domain/entities/ProjectStage";
+import { useProjects } from "@/src/features/project/presentation/context/ProjectsContext";
 import { AppTokens } from "@/src/theme/tokens";
 import { useWorkspace } from "../viewmodels/WorkspaceViewModelContext";
 import { SelectablePill } from "./SelectablePill";
@@ -12,6 +13,7 @@ import { SelectablePill } from "./SelectablePill";
 // misma traduccion y el mismo color que usan los filtros de la cartelera.
 export function StageSelector({ stage }: { stage: ProjectStage }) {
   const vm = useWorkspace();
+  const { refresh: refreshProjects } = useProjects();
 
   if (!vm.isLeader) return <StageChip stage={stage} />;
 
@@ -19,6 +21,9 @@ export function StageSelector({ stage }: { stage: ProjectStage }) {
     if (next === stage) return;
     try {
       await vm.updateStage(next);
+      // Como `refrescarListasDeProyectos` de Flutter: la cartelera y el detalle
+      // guardan su propia copia de los proyectos.
+      refreshProjects();
     } catch {
       // Como en Flutter: si falla, la etapa se queda como estaba.
     }

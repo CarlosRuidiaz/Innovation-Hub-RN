@@ -3,6 +3,7 @@ import React from "react";
 
 import { BottomSheet } from "@/src/core/components/BottomSheet";
 import { PrimaryButton, SecondaryButton } from "@/src/core/components/Buttons";
+import { useProjects } from "@/src/features/project/presentation/context/ProjectsContext";
 import { useWorkspace } from "../viewmodels/WorkspaceViewModelContext";
 
 // Hoja de confirmacion para salir de un proyecto: `leave_project_sheet.dart`.
@@ -10,6 +11,7 @@ import { useWorkspace } from "../viewmodels/WorkspaceViewModelContext";
 export function LeaveProjectSheet({ visible, onDismiss }: { visible: boolean; onDismiss: () => void }) {
   const vm = useWorkspace();
   const navigation = useNavigation();
+  const { refresh: refreshProjects } = useProjects();
 
   const confirm = async () => {
     let left: boolean;
@@ -19,6 +21,9 @@ export function LeaveProjectSheet({ visible, onDismiss }: { visible: boolean; on
       // Como en Flutter: si falla, la hoja se queda abierta.
       return;
     }
+    // Como `refrescarListasDeProyectos` de Flutter: la cartelera y el detalle
+    // guardan su propia copia de los proyectos.
+    refreshProjects();
     onDismiss();
     // De vuelta a la pantalla principal: este espacio de trabajo ya no es suyo.
     if (left) navigation.dispatch(StackActions.popToTop());

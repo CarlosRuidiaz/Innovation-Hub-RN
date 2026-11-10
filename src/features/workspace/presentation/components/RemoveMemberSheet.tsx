@@ -2,6 +2,7 @@ import React from "react";
 
 import { BottomSheet } from "@/src/core/components/BottomSheet";
 import { PrimaryButton, SecondaryButton } from "@/src/core/components/Buttons";
+import { useProjects } from "@/src/features/project/presentation/context/ProjectsContext";
 import { TeamMember } from "../viewmodels/TeamMember";
 import { useWorkspace } from "../viewmodels/WorkspaceViewModelContext";
 
@@ -9,6 +10,7 @@ import { useWorkspace } from "../viewmodels/WorkspaceViewModelContext";
 // `remove_member_sheet.dart`. Sin miembro elegido no se ve.
 export function RemoveMemberSheet({ member, onDismiss }: { member: TeamMember | null; onDismiss: () => void }) {
   const vm = useWorkspace();
+  const { refresh: refreshProjects } = useProjects();
 
   const confirm = async () => {
     if (member == null) return;
@@ -18,6 +20,9 @@ export function RemoveMemberSheet({ member, onDismiss }: { member: TeamMember | 
       // Como en Flutter: si falla, la hoja se queda abierta.
       return;
     }
+    // Como `refrescarListasDeProyectos` de Flutter: la cartelera y el detalle
+    // guardan su propia copia de los proyectos.
+    refreshProjects();
     onDismiss();
   };
 
