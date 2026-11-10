@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 
 import { EmptyState } from "@/src/core/components/EmptyState";
@@ -11,6 +11,7 @@ import { CommunityStats } from "@/src/features/project/presentation/components/C
 import { ExploreSearchRow } from "@/src/features/project/presentation/components/ExploreSearchRow";
 import { ProjectCard } from "@/src/features/project/presentation/components/ProjectCard";
 import { ShowcaseBanner } from "@/src/features/project/presentation/components/ShowcaseBanner";
+import { useFollows } from "@/src/features/follow/presentation/context/FollowsContext";
 import { useProjects } from "@/src/features/project/presentation/context/ProjectsContext";
 import { RootStackParamList } from "@/src/navigation/types";
 import { AppColors, AppTokens, AppTypography } from "@/src/theme/tokens";
@@ -29,6 +30,12 @@ export default function CarteleraScreen() {
   const { projects, isLoading, mySkills, projectsForMySkills, allVisibleProjects, refresh, clearFilters } =
     useProjects();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { reload: reloadFollows } = useFollows();
+  // Deslizar recarga los proyectos y, con Kora, los conteos de seguidores de
+  // las tarjetas.
+  const onRefresh = useCallback(async () => {
+    await Promise.all([refresh(), reloadFollows()]);
+  }, [refresh, reloadFollows]);
 
   // El indicador a pantalla completa solo cuando todavia no hay nada que
   // mostrar; si no, la lista parpadea al refrescar.
@@ -50,7 +57,7 @@ export default function CarteleraScreen() {
       ListHeaderComponent={header}
       ListEmptyComponent={empty}
       contentContainerStyle={data.length === 0 ? styles.emptyList : styles.list}
-      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} colors={[AppColors.persimmon]} tintColor={AppColors.persimmon} />}
+      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={onRefresh} colors={[AppColors.persimmon]} tintColor={AppColors.persimmon} />}
     />
   );
 
