@@ -15,7 +15,7 @@ import { Pill } from "@/src/core/components/Pill";
 import { useSession } from "@/src/features/auth/presentation/context/SessionContext";
 import { CompactProjectCard } from "@/src/features/myProjects/presentation/components/CompactProjectCard";
 import { useMyProjectsViewModel } from "@/src/features/myProjects/presentation/viewmodels/useMyProjectsViewModel";
-import { AppColors, AppTokens, AppTypography } from "@/src/theme/tokens";
+import { AppColors, AppFonts, AppTokens, AppTypography } from "@/src/theme/tokens";
 import { useProfile } from "../context/ProfileContext";
 
 function getInitials(name: string): string {
@@ -202,9 +202,9 @@ const styles = StyleSheet.create({
     gap: AppTokens.gapL,
   },
   avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: AppTokens.avatarSizeLarge,
+    height: AppTokens.avatarSizeLarge,
+    borderRadius: AppTokens.avatarSizeLarge / 2,
     backgroundColor: AppColors.gold,
     borderWidth: AppTokens.borderWidth,
     borderColor: AppColors.ink,
@@ -214,15 +214,13 @@ const styles = StyleSheet.create({
   avatarText: {
     ...AppTypography.headlineMedium,
     color: AppColors.ink,
-    fontWeight: "bold",
   },
   headerInfo: {
     flex: 1,
-    gap: 4,
+    gap: AppTokens.gapXs,
   },
   name: {
     ...AppTypography.titleLarge,
-    fontWeight: "bold",
   },
   program: {
     ...AppTypography.bodyMedium,
@@ -230,14 +228,14 @@ const styles = StyleSheet.create({
   activeCount: {
     ...AppTypography.bodyMedium,
     color: AppColors.persimmon,
-    fontWeight: "600",
+    fontFamily: AppFonts.bodySemiBold,
   },
   section: {
     gap: AppTokens.gapM,
   },
   sectionTitle: {
     ...AppTypography.titleMedium,
-    fontWeight: "bold",
+    fontFamily: AppFonts.displayBold,
   },
   emptySectionText: {
     ...AppTypography.bodyMedium,
@@ -253,7 +251,7 @@ const styles = StyleSheet.create({
   },
   roleText: {
     ...AppTypography.bodySmall,
-    fontWeight: "600",
+    fontFamily: AppFonts.bodySemiBold,
     color: AppColors.ink,
   },
   logoutWrapper: {

@@ -15,7 +15,7 @@ import { PrimaryButton } from "@/src/core/components/Buttons";
 import { PaperCard } from "@/src/core/components/PaperCard";
 import { Pill } from "@/src/core/components/Pill";
 import { TypeTile } from "@/src/core/components/TypeTile";
-import { AppColors, AppTokens, AppTypography } from "@/src/theme/tokens";
+import { AppColors, AppFonts, AppTokens, AppTypography } from "@/src/theme/tokens";
 import { CompactProjectCard } from "../components/CompactProjectCard";
 import { useMyProjectsViewModel } from "../viewmodels/useMyProjectsViewModel";
 
@@ -210,6 +210,7 @@ export default function MyProjectsScreen({ onExplore }: { onExplore?: () => void
                                   label="NO ACEPTADA"
                                   background={AppColors.card}
                                   foreground={AppColors.secondary}
+                                  borderColor={AppColors.secondary}
                                 />
                               )}
                             </View>
@@ -272,7 +273,7 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: "row",
     backgroundColor: AppColors.paper,
-    borderBottomWidth: 1,
+    borderBottomWidth: AppTokens.hairline,
     borderBottomColor: AppColors.ink,
   },
   tabItem: {
@@ -288,14 +289,14 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     color: AppColors.ink,
-    fontWeight: "bold",
+    fontFamily: AppFonts.bodyBold,
   },
   tabIndicator: {
     position: "absolute",
-    bottom: -1,
+    bottom: -AppTokens.hairline,
     left: AppTokens.gapL,
     right: AppTokens.gapL,
-    height: 3,
+    height: AppTokens.navIndicatorHeight,
     backgroundColor: AppColors.persimmon,
     borderRadius: AppTokens.navIndicatorRadius,
   },
@@ -327,8 +328,8 @@ const styles = StyleSheet.create({
   sectionHeader: {
     ...AppTypography.bodySmall,
     textTransform: "uppercase",
-    fontWeight: "700",
-    letterSpacing: 0.5,
+    fontFamily: AppFonts.bodyBold,
+    letterSpacing: AppTokens.labelLetterSpacing,
     paddingHorizontal: AppTokens.gapL,
     color: AppColors.secondary,
   },
@@ -343,7 +344,7 @@ const styles = StyleSheet.create({
     gap: AppTokens.gapM,
   },
   postulacionDivider: {
-    borderBottomWidth: 1,
+    borderBottomWidth: AppTokens.hairline,
     borderBottomColor: AppColors.hatch,
   },
   postulacionInfo: {
@@ -352,7 +353,7 @@ const styles = StyleSheet.create({
   },
   postulacionTitle: {
     ...AppTypography.titleMedium,
-    fontWeight: "bold",
+    fontFamily: AppFonts.displayBold,
   },
   postulacionSkills: {
     ...AppTypography.bodySmall,
@@ -360,6 +361,6 @@ const styles = StyleSheet.create({
   },
   postulacionPillWrapper: {
     alignSelf: "flex-start",
-    marginTop: 2,
+    marginTop: AppTokens.hairGap,
   },
 });

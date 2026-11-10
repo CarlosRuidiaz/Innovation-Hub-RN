@@ -283,17 +283,16 @@ const styles = StyleSheet.create({
   membersRow: { flexDirection: "row", alignItems: "center", gap: AppTokens.gapXs },
   membersText: { ...AppTypography.bodySmall, color: AppColors.ink },
   divider: {
-    height: 1,
-    backgroundColor: AppColors.ink,
-    opacity: 0.15,
+    height: AppTokens.hairline,
+    backgroundColor: AppColors.inkFaint,
     marginVertical: AppTokens.gapS,
   },
   pendingHeader: {
     ...AppTypography.bodySmall,
     color: AppColors.secondary,
     textTransform: "uppercase",
-    fontWeight: "700",
-    letterSpacing: 0.5,
+    fontFamily: AppFonts.bodyBold,
+    letterSpacing: AppTokens.labelLetterSpacing,
     paddingHorizontal: AppTokens.gapL,
     paddingVertical: AppTokens.gapS,
   },
@@ -301,7 +300,7 @@ const styles = StyleSheet.create({
     padding: AppTokens.gapXl,
     alignItems: "center",
     justifyContent: "center",
-    minHeight: 180,
+    minHeight: AppTokens.emptyMinHeight,
   },
   emptyText: { ...AppTypography.bodyMedium, color: AppColors.secondary, textAlign: "center" },
   cardMargin: {
@@ -332,7 +331,7 @@ const styles = StyleSheet.create({
   },
   applicantInfo: {
     flex: 1,
-    gap: 2,
+    gap: AppTokens.hairGap,
   },
   applicantName: {
     ...AppTypography.titleMedium,
@@ -387,11 +386,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "stretch",
     gap: AppTokens.gapS,
-    paddingTop: 2,
+    paddingTop: AppTokens.hairGap,
   },
   quoteBar: {
-    width: 3,
-    borderRadius: 1.5,
+    width: AppTokens.quoteBarWidth,
+    borderRadius: AppTokens.quoteBarWidth / 2,
     backgroundColor: AppColors.persimmon,
   },
   // La cursiva es su propia fuente: con `fontStyle`, Android no la dibuja.

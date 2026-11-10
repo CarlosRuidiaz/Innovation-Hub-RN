@@ -48,5 +48,5 @@ const styles = StyleSheet.create({
   content: { flex: 1 },
   title: { ...AppTypography.titleMedium, color: AppColors.white, fontFamily: AppFonts.displayBold },
   // El blanco al 80 % de Flutter, sin escribir un color nuevo.
-  subtitle: { ...AppTypography.bodySmall, color: AppColors.white, opacity: 0.8, marginTop: AppTokens.gapXs },
+  subtitle: { ...AppTypography.bodySmall, color: AppColors.whiteMuted, marginTop: AppTokens.gapXs },
 });

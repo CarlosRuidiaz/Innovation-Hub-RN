@@ -6,7 +6,7 @@ import { StageChip } from "@/src/core/components/StageChip";
 import { TypeTile } from "@/src/core/components/TypeTile";
 import { ProjectCounters } from "@/src/features/follow/presentation/components/ProjectCounters";
 import { Project } from "@/src/features/project/domain/entities/Project";
-import { AppTokens, AppTypography } from "@/src/theme/tokens";
+import { AppFonts, AppTokens, AppTypography } from "@/src/theme/tokens";
 
 type Props = {
   project: Project;
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...AppTypography.titleMedium,
-    fontWeight: "bold",
+    fontFamily: AppFonts.displayBold,
   },
   metaRow: {
     flexDirection: "row",
