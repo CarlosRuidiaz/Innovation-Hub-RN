@@ -88,6 +88,26 @@ export const AppTokens = {
   // borde persimmon de 2.
   fieldPadding: 14,
   focusedBorderWidth: 2,
+  // El espacio de trabajo: la barra de avance de la cabecera (10 de alto, con
+  // marcas de 4 debajo), el punto y la linea de la bitacora de avances, y los
+  // avatares con iniciales (el `CircleAvatar` de Flutter: 40, y 28 en las tareas).
+  progressBarHeight: 10,
+  progressTickHeight: 4,
+  timelineDotSize: 12,
+  timelineLineWidth: 2,
+  avatarSize: 40,
+  avatarSizeSmall: 28,
+  // La barra de cada opcion en los resultados de una encuesta: el alto del
+  // `LinearProgressIndicator` de Flutter.
+  resultBarHeight: 4,
+  // El calendario para elegir una fecha (`showDatePicker`): cada dia es un
+  // circulo de 40.
+  calendarDaySize: 40,
+  // Las pestañas de arriba (`TabBar` de Flutter): 46 de alto, la raya de la
+  // pestaña activa de 2 y la linea de abajo de 1.
+  tabHeight: 46,
+  tabIndicatorHeight: 2,
+  tabDividerHeight: 1,
 } as const;
 
 // Las familias cargadas en `App.tsx`. En React Native cada peso es una fuente
@@ -105,6 +125,7 @@ type TextStyleToken = {
   fontSize: number;
   color: string;
   lineHeight?: number;
+  letterSpacing?: number;
 };
 
 // La tabla de tipografia de `app_theme.dart`: Fraunces para titulares, Archivo
@@ -132,6 +153,19 @@ export const AppTypography = {
   field: { fontFamily: AppFonts.body, fontSize: 14, color: AppColors.secondary },
   // Texto de una pildora.
   pill: { fontFamily: AppFonts.bodySemiBold, fontSize: 11.5, color: AppColors.ink, lineHeight: 14 },
+  // Las iniciales dentro de un avatar: blancas sobre color en el equipo, de
+  // tinta y mas chicas en las tareas.
+  avatarInitials: { fontFamily: AppFonts.bodyBold, fontSize: 16, color: AppColors.white },
+  avatarInitialsSmall: { fontFamily: AppFonts.bodyBold, fontSize: 11, color: AppColors.ink },
+  // La fecha de un avance en la bitacora (`labelSmall` con espaciado de 1).
+  timelineDate: { fontFamily: AppFonts.bodySemiBold, fontSize: 11, color: AppColors.secondary, letterSpacing: 1 },
+  // El titulo de los resultados de una encuesta: el `headlineSmall` que Flutter
+  // deja con su tamaño por omision.
+  headlineSmall: { fontFamily: AppFonts.body, fontSize: 24, color: AppColors.ink },
+  // Una pestaña de arriba sin elegir (`unselectedLabelStyle`).
+  tabUnselected: { fontFamily: AppFonts.body, fontSize: 14, color: AppColors.secondary },
+  // El conteo de cada opcion en los resultados de una encuesta, en negrita.
+  resultCount: { fontFamily: AppFonts.bodyBold, fontSize: 13.5, color: AppColors.ink },
 } as const satisfies Record<string, TextStyleToken>;
 
 // Elige tinta o blanco para el texto segun el brillo del fondo, como
