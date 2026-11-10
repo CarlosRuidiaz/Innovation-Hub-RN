@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+import { configure, fireEvent, screen, waitFor } from "@testing-library/react-native";
 
 import { DummyData } from "@/src/core/data/dummyData";
 import { Container } from "@/src/core/di/container";
@@ -12,6 +12,11 @@ import PollResultsScreen from "@/src/features/poll/presentation/screens/PollResu
 import RespondPollScreen from "@/src/features/poll/presentation/screens/RespondPollScreen";
 import { newProject } from "@/src/features/project/domain/entities/Project";
 import { renderScreen } from "@/__tests__/support/renderScreen";
+
+// Responder encadena varias esperas (abrir, cargar respuestas, guardar, abrir
+// resultados). Con toda la suite en paralelo, el segundo por omision a veces
+// no alcanza: el mismo margen que usa la prueba de login.
+configure({ asyncUtilTimeout: 5000 });
 
 // `poll_test.dart`, una por una.
 
