@@ -1,3 +1,8 @@
+# Link Video Comparación Flutter VS React
+
+ https://www.youtube.com/watch?v=0EvIemVGBMw
+
+
 # Innovation Hub
 
 La cartelera de proyectos del Grupo 4 de Programación Móvil (Universidad del Norte), en React Native. Los
